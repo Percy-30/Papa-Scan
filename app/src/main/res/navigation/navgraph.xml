@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navgraph"
+    app:startDestination="@id/recognitionMain">
+
+    <fragment
+        android:id="@+id/recognitionMain"
+        android:name="com.example.imagerecognitionapp.ui.main.RecognitionMain"
+        android:label="RecognitionMain"
+        tools:layout="@layout/fragment_recognition">
+        <action
+            android:id="@+id/action_recognitionMain_to_recognitionFragment"
+            app:destination="@id/recognitionFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/recognitionFragment"
+        android:name="com.example.imagerecognitionapp.ui.recognition.RecognitionFragment"
+        android:label="RecognitionFragment"
+       >
+        <action
+            android:id="@+id/action_recognitionFragment_to_recognitionMain"
+            app:destination="@id/recognitionMain" />
+        <action
+            android:id="@+id/action_recognitionFragment_to_fragmentCamera"
+            app:destination="@id/fragmentCamera" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentCamera"
+        android:name="com.example.imagerecognitionapp.ui.camera.FragmentCamera"
+        android:label="FragmentCamera" >
+        <action
+            android:id="@+id/action_fragmentCamera_to_recognitionFragment"
+            app:destination="@id/recognitionFragment" />
+    </fragment>
+</navigation>
