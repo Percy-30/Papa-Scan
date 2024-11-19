@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_recognitionMain_to_recognitionFragment"
             app:destination="@id/recognitionFragment" />
+        <action
+            android:id="@+id/action_recognitionMain_to_fragmentAlertDialog"
+            app:destination="@id/fragmentAlertDialog" />
     </fragment>
     <fragment
         android:id="@+id/recognitionFragment"
@@ -25,6 +28,9 @@
         <action
             android:id="@+id/action_recognitionFragment_to_fragmentCamera"
             app:destination="@id/fragmentCamera" />
+        <action
+            android:id="@+id/action_recognitionFragment_to_fragmentAlertDialog"
+            app:destination="@id/fragmentAlertDialog" />
     </fragment>
     <fragment
         android:id="@+id/fragmentCamera"
@@ -33,5 +39,23 @@
         <action
             android:id="@+id/action_fragmentCamera_to_recognitionFragment"
             app:destination="@id/recognitionFragment" />
+        <action
+            android:id="@+id/action_fragmentCamera_to_fragmentAlertDialog"
+            app:destination="@id/fragmentAlertDialog" />
     </fragment>
+    <dialog
+        android:id="@+id/fragmentAlertDialog"
+        android:name="com.example.imagerecognitionapp.ui.dialog.FragmentAlertDialog"
+        android:label="fragment_alert_dialog"
+        tools:layout="@layout/fragment_alert_dialog" >
+        <action
+            android:id="@+id/action_fragmentAlertDialog_to_recognitionMain"
+            app:destination="@id/recognitionMain" />
+        <action
+            android:id="@+id/action_fragmentAlertDialog_to_recognitionFragment"
+            app:destination="@id/recognitionFragment" />
+        <action
+            android:id="@+id/action_fragmentAlertDialog_to_fragmentCamera"
+            app:destination="@id/fragmentCamera" />
+    </dialog>
 </navigation>
