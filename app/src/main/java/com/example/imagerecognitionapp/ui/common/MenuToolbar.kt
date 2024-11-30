@@ -13,19 +13,7 @@ import com.example.imagerecognitionapp.R
 import com.example.imagerecognitionapp.ui.camera.FragmentCamera
 
 
-class MenuToolbar (private val context: Context,
-    private val onAboutClick:(() -> Unit)? = null
-) {
-
-    fun setupToolbar(toolbar: Toolbar, title: String) {
-        (context as? AppCompatActivity)?.apply {
-            setSupportActionBar(toolbar)
-            supportActionBar?.apply {
-                this.title = title
-                setDisplayHomeAsUpEnabled(true)
-            }
-        }
-    }
+class MenuToolbar (private val context: Context) {
 
     fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu, menu)

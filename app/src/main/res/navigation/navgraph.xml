@@ -3,7 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navgraph"
-    app:startDestination="@id/recognitionMain">
+    app:startDestination="@id/splashFragment">
+
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="com.example.app.ui.splash.SplashFragment"
+        android:label="SplashFragment" >
+        <action
+            android:id="@+id/action_splashFragment_to_recognitionMain"
+            app:destination="@id/recognitionMain" />
+    </fragment>
 
     <fragment
         android:id="@+id/recognitionMain"
@@ -58,4 +67,5 @@
             android:id="@+id/action_fragmentAlertDialog_to_fragmentCamera"
             app:destination="@id/fragmentCamera" />
     </dialog>
+
 </navigation>

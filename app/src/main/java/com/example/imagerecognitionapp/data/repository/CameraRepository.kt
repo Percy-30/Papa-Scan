@@ -56,6 +56,11 @@ class CameraRepository(private val activity: FragmentActivity) {
         previewView: PreviewView,
         lifecycleOwner: LifecycleOwner
     ) {
+        if (!isCameraPermissionGranted()) {
+            _cameraState.value = CameraState.Error("Permiso de cámara denegado")
+            return
+        }
+
         val cameraProviderFuture = ProcessCameraProvider.getInstance(activity)
 
         cameraProviderFuture.addListener({
@@ -111,7 +116,7 @@ class CameraRepository(private val activity: FragmentActivity) {
 
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            //put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
             put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraApp/Preview")
         }
 
@@ -160,7 +165,7 @@ class CameraRepository(private val activity: FragmentActivity) {
 
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+           // put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
             put(MediaStore.Images.Media.RELATIVE_PATH, "DCIM/Camera")
         }
 

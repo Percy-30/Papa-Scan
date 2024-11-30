@@ -5,8 +5,17 @@
 
     <!-- TODO: Text String Menu Principal -->
     <string name="app">Reconocimiento de enfermedad - Papa</string>
+    <string name="infoTitle">Informacion</string>
+    <string name="infoDescription">Reconocimiento Patofolia</string>
+    <string name="infoDescriptioneEmail">Email: achataipepercy@gmail.com</string>
+    <string name="infoImgDescription">Imagne de informacion</string>
+
     <string name="btnDetectPatofoli">Detectar patofolia</string>
     <string name="btnAbout">Acerca de</string>
     <string name="btnExit">Salir</string>
-
+    <string name="itemName">Item</string>
+    <string name="btnTakePhoto">Tomar Foto</string>
+    <string name="btnSavePhoto">Guardar</string>
+    <string name="btnCancelPhoto">Cancel</string>
+    <string name="btnHecho">Hecho</string>
 </resources>

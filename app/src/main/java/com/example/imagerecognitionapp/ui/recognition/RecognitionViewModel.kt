@@ -53,14 +53,17 @@ class RecognitionViewModel @Inject constructor(
     }
 
     //Cambia el estado del FAB Menu
+
     fun btnAddMenu() {
-        _isFabMenuOpen.value = _isFabMenuOpen.value != true
+        _isFabMenuOpen.value = _isFabMenuOpen.value?.not()
     }
     fun btnUploadImage(){
         _isUploadImage.value = _isUploadImage.value != true
+        //_isUploadImage.value = true
     }
     fun btnOpenCamera(){
         _isOpenCamera.value = _isOpenCamera.value!= true
+        //_isOpenCamera.value = true
     }
 
 

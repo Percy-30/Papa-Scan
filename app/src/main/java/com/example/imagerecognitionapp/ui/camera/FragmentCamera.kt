@@ -11,6 +11,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -23,6 +24,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.airbnb.lottie.LottieAnimationView
 //import com.example.imagerecognitionapp.Manifest
 import com.example.imagerecognitionapp.R
 import com.example.imagerecognitionapp.data.repository.CameraRepository
@@ -47,9 +49,12 @@ class FragmentCamera : Fragment() {
     private lateinit var cameraRepository: CameraRepository
     private var camera: Camera? = null
     private var isImageCaptured = false
+    private val viewModel: RecognitionViewModel by viewModels()
 
     private lateinit var menuHandler: MenuToolbar
     private lateinit var info: FragmentAlertDialog
+
+    lateinit var lottieAnimation: LottieAnimationView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,21 +69,39 @@ class FragmentCamera : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         // Inicializar MenuHandler
 
-
         // Configurar Toolbar
         startMenu()
         setupCamera()
         setupUI()
         observeCameraState()
-       // setupToolbar()
+        // setupToolbar()
+
+        // binding.lottieAnimationView.playAnimation()
+        // Manejar el botón de retroceso
+        EnabledRetroceso()
 
     }
 
+    private fun EnabledRetroceso(){
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                isEnabled = true
+                CloseMenuFlotant()
+                /* if (viewModel.isFabMenuOpen.value == false) {
+                     //viewModel.btnAddMenu() // Cierra el menú flotante
+                     CloseMenuFlotant()
+                 } else {
+                     isEnabled = true // Desactivar callback temporalmente
+                     requireActivity().onBackPressed() // Delegar al comportamiento por defecto
+                 }*/
+            }
+        })
+    }
+
+
+    //********MENU
     private fun startMenu() {
-        menuHandler = MenuToolbar(
-            context = requireContext(),
-           onAboutClick = { navigateToAlertDialog() }
-        )
+        menuHandler = MenuToolbar(context = requireContext())
         // Configurar la Toolbar
         (requireActivity() as AppCompatActivity).apply {
             setSupportActionBar(binding.appBarMenu.toolbar)
@@ -89,54 +112,6 @@ class FragmentCamera : Fragment() {
         }
         setHasOptionsMenu(true)
     }
-
-    //********MENU
-
-
-    private fun navigateToAlertDialog() {
-        try {
-            findNavController().navigate(R.id.action_fragmentCamera_to_fragmentAlertDialog)
-        } catch (e: Exception) {
-            Log.e("Navigation", "Error navigating to AlertDialog: ${e.message}")
-            Toast.makeText(requireContext(), "Error al mostrar el diálogo", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    /*private fun showAboutDialog() {
-        // Evitar mostrar múltiples diálogos
-        /*FragmentAlertDialog().apply {
-            title = getString(R.string.info_title) // Make sure these string resources exist
-            description = getString(R.string.info_description)
-            onActionClicked = {
-                dismiss()
-            }
-        }*/
-        val dialogFragment = FragmentAlertDialog().apply {
-            title = "Acerca de la aplicación"  // Texto directo en lugar de recurso
-            description = "Esta es una aplicación de reconocimiento de imágenes"  // Texto directo
-            onActionClicked = {
-                parentFragmentManager.beginTransaction()
-                    .remove(this)
-                    .commit()
-            }
-        }
-
-        parentFragmentManager.beginTransaction()
-            .add(R.id.InfoConstraintLayout, dialogFragment)  // Asegúrate que InfoConstraintLayout existe en tu layout
-            .addToBackStack(null)
-            .commit()
-
-    }*/
-
-
-    //Pasar de fragment en fragment
-    private fun navigateToRecognitionFragment() {
-        findNavController().navigate(R.id.action_fragmentCamera_to_recognitionFragment)
-    }
-   /* private fun navigateToAlertDialog() {
-        findNavController().navigate(R.id.action_recognitionFragment_to_fragmentAlertDialog)
-    }*/
-
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menuHandler.onCreateOptionsMenu(menu, inflater)
@@ -162,7 +137,26 @@ class FragmentCamera : Fragment() {
         }
     }
 
+    //*********ALERT DIALOG
+    private fun navigateToAlertDialog() {
+        try {
+            findNavController().navigate(R.id.action_fragmentCamera_to_fragmentAlertDialog)
+        } catch (e: Exception) {
+            Log.e("Navigation", "Error navigating to AlertDialog: ${e.message}")
+            Toast.makeText(requireContext(), "Error al mostrar el diálogo", Toast.LENGTH_SHORT).show()
+        }
+    }
 
+    private fun CloseMenuFlotant(){
+        viewModel.btnAddMenu()
+        //viewModel.btnOpenCamera()
+    }
+
+    //Pasar de fragment en fragment
+    private fun navigateToRecognitionFragment() {
+        CloseMenuFlotant()
+        findNavController().navigate(R.id.action_fragmentCamera_to_recognitionFragment)
+    }
 
 
     //*****CAMERA
@@ -178,14 +172,27 @@ class FragmentCamera : Fragment() {
             cameraPreview.visibility = View.VISIBLE
             btnTakePhoto.visibility = View.VISIBLE
             imagePreview.visibility = View.GONE
-            btnSave.visibility = View.GONE
-            //btnRetake.visibility = View.GONE
-
+            btnSaveCancelGone()
             btnTakePhoto.setOnClickListener { captureImage() }
-            btnSave.setOnClickListener { saveImage() }
-            //btnRetake.setOnClickListener { retakePhoto() }
+            btnSavePhoto.setOnClickListener { saveImage() }
+            btnCancelPhoto.setOnClickListener { retakePhoto() }
         }
     }
+
+    private fun btnSaveCancelGone(){
+        with(binding){
+            btnSavePhoto.visibility = View.GONE
+            btnCancelPhoto.visibility = View.GONE
+        }
+    }
+
+    private fun btnSaveCancelVisibible(){
+        with(binding){
+            btnSavePhoto.visibility = View.VISIBLE
+            btnCancelPhoto.visibility = View.VISIBLE
+        }
+    }
+
 
     private fun startCamera() {
         cameraRepository.startCamera(binding.cameraPreview, viewLifecycleOwner)
@@ -203,6 +210,7 @@ class FragmentCamera : Fragment() {
     }
 
     private fun saveImage() {
+        //binding.lottieAnimationView.playAnimation()
         cameraRepository.saveImage(
             onImageSaved = { uri ->
                 // Navegar de vuelta con el URI de la imagen
@@ -224,8 +232,7 @@ class FragmentCamera : Fragment() {
 
             // Cambiar los botones visibles
             btnTakePhoto.visibility = View.GONE
-            btnSave.visibility = View.VISIBLE
-            //btnRetake.visibility = View.VISIBLE
+            btnSaveCancelVisibible()
         }
         isImageCaptured = true
     }
@@ -238,8 +245,7 @@ class FragmentCamera : Fragment() {
 
             // Restaurar los botones originales
             btnTakePhoto.visibility = View.VISIBLE
-            btnSave.visibility = View.GONE
-            //btnRetake.visibility = View.GONE
+            btnSaveCancelGone()
         }
         isImageCaptured = false
         startCamera()
@@ -270,7 +276,8 @@ class FragmentCamera : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        CloseMenuFlotant()
         cameraExecutor.shutdown()
+        _binding = null
     }
 }

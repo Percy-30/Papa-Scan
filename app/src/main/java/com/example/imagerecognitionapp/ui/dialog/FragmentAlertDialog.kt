@@ -13,19 +13,10 @@ class FragmentAlertDialog : DialogFragment (){
     private var _binding: FragmentAlertDialogBinding? = null
     private val binding get() = _binding!!
 
-    /**
-     * Título del diálogo.
-     */
     var title: String? = null
 
-    /**
-     * Descripción del diálogo.
-     */
     var description: String? = null
 
-    /**
-     * Callback para el botón de acción.
-     */
     var onActionClicked: (() -> Unit)? = null
 
     override fun onCreateView(
@@ -43,8 +34,8 @@ class FragmentAlertDialog : DialogFragment (){
     }
 
     private fun initViews() {
-        binding.infoTitle.text = title ?: "Título por defecto"
-        binding.infoDescription.text = description ?: "Descripción por defecto"
+       // binding.infoTitle.text = title ?: "Título por defecto"
+        //binding.infoDescription.text = description ?: "Descripción por defecto"
         setupButton()
     }
 
