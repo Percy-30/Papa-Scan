@@ -25,6 +25,7 @@
             android:text="@string/app"
             android:textSize="20sp"
             android:textStyle="bold"
+            android:textAlignment="center"
             app:layout_constraintBottom_toTopOf="@+id/lottieAnimationView2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"

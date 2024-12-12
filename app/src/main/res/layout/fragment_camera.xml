@@ -26,24 +26,21 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Imagen procesada grande -->
-
-
-
         <androidx.camera.view.PreviewView
             android:id="@+id/camera_preview"
             android:layout_width="350dp"
             android:layout_height="450dp"
             android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/btn_take_photo"
+            app:layout_constraintBottom_toTopOf="@+id/linearEdit"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.721" />
+            app:layout_constraintVertical_bias="0.5" />
 
         <ImageView
             android:id="@+id/image_preview"
-            android:layout_width="338dp"
-            android:layout_height="470dp"
+            android:layout_width="350dp"
+            android:layout_height="450dp"
             android:scaleType="centerCrop"
             android:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/linearEdit"

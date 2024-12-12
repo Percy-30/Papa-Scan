@@ -40,6 +40,9 @@
         <action
             android:id="@+id/action_recognitionFragment_to_fragmentAlertDialog"
             app:destination="@id/fragmentAlertDialog" />
+        <action
+            android:id="@+id/action_recognitionFragment_to_resultFragment"
+            app:destination="@id/resultFragment" />
     </fragment>
     <fragment
         android:id="@+id/fragmentCamera"
@@ -66,6 +69,21 @@
         <action
             android:id="@+id/action_fragmentAlertDialog_to_fragmentCamera"
             app:destination="@id/fragmentCamera" />
+        <action
+            android:id="@+id/action_fragmentAlertDialog_to_resultFragment"
+            app:destination="@id/resultFragment" />
     </dialog>
+    <fragment
+        android:id="@+id/resultFragment"
+        android:name="com.example.imagerecognitionapp.ui.result.ResultFragment"
+        android:label="fragment_result"
+        tools:layout="@layout/fragment_result" >
+        <action
+            android:id="@+id/action_resultFragment_to_recognitionFragment"
+            app:destination="@id/recognitionFragment" />
+        <action
+            android:id="@+id/action_resultFragment_to_fragmentAlertDialog"
+            app:destination="@id/fragmentAlertDialog" />
+    </fragment>
 
 </navigation>

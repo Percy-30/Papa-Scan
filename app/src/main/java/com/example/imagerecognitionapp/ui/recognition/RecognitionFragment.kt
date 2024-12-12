@@ -38,6 +38,7 @@ class RecognitionFragment : Fragment() {
     private lateinit var cameraRepository: CameraRepository
     private lateinit var menuHandler: MenuToolbar
     private val viewModel: RecognitionViewModel by viewModels()
+    private var cargeImage = false
 
     // Animaciones
     private val rotateOpen: Animation by lazy { AnimationUtils.loadAnimation(requireContext(), R.anim.rotate_open_anim) }
@@ -57,14 +58,13 @@ class RecognitionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Ocultar botones flotantes
-        //viewModel.btnAddMenu()
-
         startMenu()
         setupCameraRepository()
         setupObservers()
         setupClickListenersCameraGalery()
         observeNavigationResult()
+        ProcessImagen()
+
     }
 
     // Inicializar Menu Toolbar
@@ -116,6 +116,7 @@ class RecognitionFragment : Fragment() {
             else -> menuHandler.onOptionsItemSelected(item)
         }
     }
+
     //*********ALERT DIALOG
     private fun navigateToAlertDialog() {
         try {
@@ -130,13 +131,10 @@ class RecognitionFragment : Fragment() {
     private fun navigateToRecognitionFragmentMain() {
         findNavController().navigate(R.id.action_recognitionFragment_to_recognitionMain)
     }
-    private fun startAddImageAddPhoto(){
-        /*with(binding){
-            icAddAPhoto.visibility = View.GONE
-            icPhotoAlternative.visibility = View.GONE
-        }*/
-    }
 
+    private fun navigateToProcessImagenFragment() {
+        findNavController().navigate(R.id.action_recognitionFragment_to_resultFragment)
+    }
 
     // Inicializar CameraRepository
     private fun setupCameraRepository(){
@@ -150,10 +148,9 @@ class RecognitionFragment : Fragment() {
     }
 
     private fun CloseMenuFlotant(){
-        viewModel.btnAddMenu()
+        viewModel.resetFabMenuState()
         binding.icPhotoAlternative.visibility = View.GONE
         binding.icAddAPhoto.visibility = View.GONE
-        //viewModel.btnOpenCamera()
     }
 
     private fun setupMenuFlotant() {
@@ -173,6 +170,16 @@ class RecognitionFragment : Fragment() {
         }
     }
 
+    private fun ProcessImagen(){
+        binding.btnProcessImage.setOnClickListener {
+            if(cargeImage){
+                navigateToProcessImagenFragment()
+            }else{
+                Toast.makeText(requireContext(), "Debe abrir el menú para realizar la acción", Toast.LENGTH_SHORT).show()
+            }
+
+        }
+    }
 
 
     private fun OpenUploadClick(){
@@ -197,7 +204,8 @@ class RecognitionFragment : Fragment() {
     }
     // Mostrar resultrando tayedo de otro activity
     private fun observeNavigationResult() {
-        // Observar el resultado de la navegación desde FragmentCamera
+        // Observar el resultado de la navega
+        // ción desde FragmentCamera
         findNavController().currentBackStackEntry?.savedStateHandle?.getLiveData<String>("image_uri")?.observe(
             viewLifecycleOwner
         ) { uri ->
@@ -205,6 +213,7 @@ class RecognitionFragment : Fragment() {
                 // Mostrar la imagen capturada
                 binding.imgPhotoPreview.setImageURI(Uri.parse(it))
                 binding.imgPhotoPreview.visibility = View.VISIBLE
+                cargeImage = true
                 // Limpiar el savedStateHandle para evitar mostrar la misma imagen múltiples veces
                 findNavController().currentBackStackEntry?.savedStateHandle?.remove<String>("image_uri")
             }
@@ -221,9 +230,9 @@ class RecognitionFragment : Fragment() {
                 setAnimation(isOpen)
                 setClickeable(isOpen)
             }
+
         }
-        //binding.icPhotoAlternative.visibility = View.GONE
-       // binding.icAddAPhoto.visibility = View.GONE
+
         /*viewModel.isUploadImage.observe(viewLifecycleOwner) { isUpload ->
             binding.icPhotoAlternative.visibility = if (isUpload) View.VISIBLE else View.GONE
         }
@@ -271,13 +280,6 @@ class RecognitionFragment : Fragment() {
 
     private fun setClickeable(clicked: Boolean){
         with(binding){
-            /*if (!clicked){
-                icPhotoAlternative.isClickable = false
-                icAddAPhoto.isClickable = false
-            }else{
-                icPhotoAlternative.isClickable = true
-                icAddAPhoto.isClickable = true
-            }*/
             icPhotoAlternative.isClickable = clicked
             icAddAPhoto.isClickable = clicked
         }
@@ -309,6 +311,7 @@ class RecognitionFragment : Fragment() {
                 setImageURI(it)
                 visibility = View.VISIBLE
                 CloseMenuFlotant()
+                cargeImage = true
             }
             showToast("Imagen cargada con éxito")
         } ?: showToast("No se pudo cargar la imagen")
@@ -322,6 +325,7 @@ class RecognitionFragment : Fragment() {
                 binding.imgPhotoPreview.setImageURI(it)
                 binding.imgPhotoPreview.visibility = View.VISIBLE
                 CloseMenuFlotant()
+                cargeImage = true
                 Toast.makeText(requireContext(), "Imagen cargada con éxito", Toast.LENGTH_SHORT).show()
             } ?: run {
                 Toast.makeText(requireContext(), "No se pudo cargar la imagen", Toast.LENGTH_SHORT).show()

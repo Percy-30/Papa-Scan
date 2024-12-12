@@ -67,17 +67,13 @@ class FragmentCamera : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Inicializar MenuHandler
 
         // Configurar Toolbar
         startMenu()
         setupCamera()
         setupUI()
         observeCameraState()
-        // setupToolbar()
 
-        // binding.lottieAnimationView.playAnimation()
-        // Manejar el botón de retroceso
         EnabledRetroceso()
 
     }
@@ -87,13 +83,6 @@ class FragmentCamera : Fragment() {
             override fun handleOnBackPressed() {
                 isEnabled = true
                 CloseMenuFlotant()
-                /* if (viewModel.isFabMenuOpen.value == false) {
-                     //viewModel.btnAddMenu() // Cierra el menú flotante
-                     CloseMenuFlotant()
-                 } else {
-                     isEnabled = true // Desactivar callback temporalmente
-                     requireActivity().onBackPressed() // Delegar al comportamiento por defecto
-                 }*/
             }
         })
     }
@@ -148,7 +137,8 @@ class FragmentCamera : Fragment() {
     }
 
     private fun CloseMenuFlotant(){
-        viewModel.btnAddMenu()
+        //viewModel.btnAddMenu()
+        viewModel.resetFabMenuState() // Reiniciar el estado del menú flotante
         //viewModel.btnOpenCamera()
     }
 
