@@ -11,12 +11,21 @@
     <string name="btnHecho">Hecho</string>
 
     <string name="btnDetectPatofoli">Detectar patofolia</string>
+    <string name="btnHistory">Historial</string>
     <string name="btnAbout">Acerca de</string>
     <string name="btnExit">Salir</string>
     <string name="itemName">Item</string>
+
     <string name="btnTakePhoto">Tomar Foto</string>
     <string name="btnSavePhoto">Guardar</string>
     <string name="btnCancelPhoto">Cancel</string>
     <string name="btnProcessImage">Procesar Imagen</string>
+
+    <string name="confidence_label">Probabilidad: %1$.2f%%</string>
+    <string name="recognition_title">Reconocimiento</string>
+    <string name="result_image">Resultado</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="showInfo">Ver enfermedad</string>
 
 </resources>

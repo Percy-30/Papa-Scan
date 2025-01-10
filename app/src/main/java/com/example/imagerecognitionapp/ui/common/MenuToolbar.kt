@@ -13,28 +13,31 @@ import com.example.imagerecognitionapp.R
 import com.example.imagerecognitionapp.ui.camera.FragmentCamera
 
 
-class MenuToolbar (private val context: Context) {
-
+class MenuToolbar(
+    private val context: Context,
+    private val onHistoryClick: () -> Unit = {},
+    private val onAboutClick: () -> Unit = {},
+    private val onExitClick: () -> Unit = {}
+) {
     fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu, menu)
     }
 
     fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.menu_about -> {
-                Toast.makeText(context, "Acerca de seleccionado", Toast.LENGTH_SHORT).show()
-                //(context as? AppCompatActivity)
-                //onAboutClick?.invoke()
-                false
+            R.id.menu_history -> {
+                onHistoryClick()
+                true
             }
-            R.id.menu_Exti  -> {
-                (context as?  AppCompatActivity)?.finish() // Salir de la app
-                Toast.makeText(context, "EXIT", Toast.LENGTH_SHORT).show()
+            R.id.menu_about -> {
+                onAboutClick()
+                true
+            }
+            R.id.menu_exit -> {
+                onExitClick()
                 true
             }
             else -> false
         }
     }
-
-
 }

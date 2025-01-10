@@ -3,9 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:title="@string/itemName" android:icon="@drawable/ic_bar_menu" app:showAsAction="ifRoom">
         <menu>
+            <item android:id="@+id/menu_history" android:title="@string/btnHistory"
+                android:icon="@drawable/ic_start_app"/>
             <item android:id="@+id/menu_about" android:title="@string/btnAbout"
                 android:icon="@drawable/ic_bar_info"/>
-            <item android:id="@+id/menu_Exti" android:title="@string/btnExit"
+            <item android:id="@+id/menu_exit" android:title="@string/btnExit"
                 android:icon="@drawable/ic_bar_exit"/>
         </menu>
     </item>

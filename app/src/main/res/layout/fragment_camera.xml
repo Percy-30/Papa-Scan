@@ -12,7 +12,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
+        android:padding="0dp"
         tools:context=".ui.recognition.RecognitionFragment">
 
         <!-- Include menu -->
@@ -49,6 +49,19 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.77" />
+
+        <!-- Agregar este ImageView justo después del PreviewView en tu layout -->
+        <ImageView
+            android:id="@+id/overlay_guide"
+            android:layout_width="200dp"
+            android:layout_height="300dp"
+            android:src="@drawable/camera"
+            android:visibility="visible"
+            app:layout_constraintTop_toTopOf="@id/camera_preview"
+            app:layout_constraintBottom_toBottomOf="@id/camera_preview"
+            app:layout_constraintStart_toStartOf="@id/camera_preview"
+            app:layout_constraintEnd_toEndOf="@id/camera_preview"
+            />
 
         <!-- Botón con Lottie Animation -->
         <androidx.constraintlayout.widget.ConstraintLayout

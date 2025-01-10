@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt.android) // Plugin para Hilt
-    //id("androidx.navigation.safeargs.kotlin") // Plugin para Safe Args de Navegación
+    id("androidx.navigation.safeargs.kotlin") // Plugin para Safe Args de Navegación
     kotlin("kapt") // Necesario para habilitar kapt en el proyecto
 }
 
@@ -13,13 +13,19 @@ android {
     defaultConfig {
         applicationId = "com.example.imagerecognitionapp"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
 
+        // Habilitar soporte para TensorFlow Lite si es necesario
+        ndk {
+            //abiFilters.add("armeabi-v7a")
+            //abiFilters.add("arm64-v8a")
+        }
+
+    }
 
     buildTypes {
         release {
@@ -28,6 +34,15 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("armeabi-v7a")//, "arm64-v8a"
+            isUniversalApk = false // No generará un APK universal
         }
     }
 
@@ -43,6 +58,7 @@ android {
     buildFeatures {
         viewBinding = true
         dataBinding = true
+        mlModelBinding = true // Habilitar ML Model Binding
     }
 }
 
@@ -105,4 +121,24 @@ dependencies {
 
     // Lottie Animations
     implementation("com.airbnb.android:lottie:5.2.0")
+
+    // TensorFlow Lite
+    implementation("org.tensorflow:tensorflow-lite:2.13.0")
+    // TensorFlow Lite
+    //implementation("org.tensorflow:litert:2.13.0")
+    implementation("org.tensorflow:tensorflow-lite-support:0.4.3")
+    implementation("org.tensorflow:tensorflow-lite-metadata:0.4.2")
+    implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.4") // Para tareas como visión e imagen
+
+    // Soporte para GPU
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.13.0")
+
+    // Librería Picasso para carga de imágenes
+    implementation("com.squareup.picasso:picasso:2.8")
+
+    // StyleableToast
+    implementation("io.github.muddz:styleabletoast:2.4.0")
+
+
+
 }

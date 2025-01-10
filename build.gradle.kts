@@ -3,6 +3,12 @@ buildscript {
     repositories {
         google()
         mavenCentral()  // Agrega mavenCentral() si no está incluido
+        maven {
+            url = uri("https://dl.google.com/dl/android/maven2/")
+        }
+        maven {
+            url = uri("https://tensorflow.org/lite/maven")
+        }
     }
     dependencies {
         classpath(libs.androidx.navigation.safe.args.gradle.plugin)  // Actualizado a la versión más reciente

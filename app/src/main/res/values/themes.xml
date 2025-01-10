@@ -6,4 +6,10 @@
     </style>
 
     <style name="Theme.ImageRecognitionApp" parent="Base.Theme.ImageRecognitionApp" />
+
+    <style name="exampleToast">
+        <item name="stTextColor">#FDFDFD</item>
+        <item name="stTextBold">true</item>
+        <item name="stColorBackground">#17DB1F</item>
+    </style>
 </resources>

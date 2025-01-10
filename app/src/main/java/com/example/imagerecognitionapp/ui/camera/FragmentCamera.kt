@@ -90,7 +90,13 @@ class FragmentCamera : Fragment() {
 
     //********MENU
     private fun startMenu() {
-        menuHandler = MenuToolbar(context = requireContext())
+        menuHandler = MenuToolbar(
+            context = requireContext(),
+            onHistoryClick = { handleHistoryClick() },
+            onAboutClick = { navigateToAlertDialog() },
+            onExitClick = { requireActivity().finish() }
+        )
+
         // Configurar la Toolbar
         (requireActivity() as AppCompatActivity).apply {
             setSupportActionBar(binding.appBarMenu.toolbar)
@@ -108,23 +114,24 @@ class FragmentCamera : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Solo manejamos el botón de navegación hacia atrás aquí
+        // Todo lo demás se delega al menuHandler
         return when (item.itemId) {
             android.R.id.home -> {
                 navigateToRecognitionFragment()
                 true
             }
-            R.id.menu_Exti -> {
-                requireActivity().finish()
-                true
-            }
-            R.id.menu_about ->{
-                //showAboutDialog()
-                navigateToAlertDialog()
-                true
-            }
             else -> menuHandler.onOptionsItemSelected(item)
         }
     }
+
+
+    private fun handleHistoryClick() {
+        // Implementa aquí la lógica para el historial
+        Toast.makeText(requireContext(), "Historial seleccionado", Toast.LENGTH_SHORT).show()
+        // findNavController().navigate(R.id.action_fragmentCamera_to_historyFragment)
+    }
+
 
     //*********ALERT DIALOG
     private fun navigateToAlertDialog() {
@@ -162,6 +169,10 @@ class FragmentCamera : Fragment() {
             cameraPreview.visibility = View.VISIBLE
             btnTakePhoto.visibility = View.VISIBLE
             imagePreview.visibility = View.GONE
+
+            // Asegurarse de que la guía sea visible cuando la cámara está activa
+            overlayGuide.visibility = View.VISIBLE
+
             btnSaveCancelGone()
             btnTakePhoto.setOnClickListener { captureImage() }
             btnSavePhoto.setOnClickListener { saveImage() }
@@ -218,6 +229,7 @@ class FragmentCamera : Fragment() {
             // Ocultar la vista previa de la cámara y mostrar la imagen capturada
             cameraPreview.visibility = View.GONE
             imagePreview.visibility = View.VISIBLE
+            overlayGuide.visibility = View.GONE // Ocultar la guía cuando se muestra la preview
             imagePreview.setImageURI(uri)
 
             // Cambiar los botones visibles
@@ -232,6 +244,7 @@ class FragmentCamera : Fragment() {
             // Volver a mostrar la vista previa de la cámara
             cameraPreview.visibility = View.VISIBLE
             imagePreview.visibility = View.GONE
+            overlayGuide.visibility = View.VISIBLE // Mostrar la guía nuevamente
 
             // Restaurar los botones originales
             btnTakePhoto.visibility = View.VISIBLE

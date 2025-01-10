@@ -25,16 +25,20 @@ import com.example.imagerecognitionapp.R
 import com.example.imagerecognitionapp.databinding.ActivityMainBinding
 import com.example.imagerecognitionapp.databinding.FragmentRecognitionMainBinding
 import com.example.imagerecognitionapp.ui.common.MenuToolbar
+import com.example.imagerecognitionapp.utils.TensorFlowHelper
 
 class RecognitionMain : Fragment() {
 
     private lateinit var binding: FragmentRecognitionMainBinding
     private lateinit var menuHandler: MenuToolbar
-    private val model: MainViewModel by activityViewModels()
+    //private val model: MainViewModel by activityViewModels()
 
     lateinit var buttonWithAnimation: ConstraintLayout
     lateinit var lottieAnimationView: LottieAnimationView
     lateinit var buttonText: TextView
+
+    // private lateinit var viewModel: RecognitionViewModel
+    lateinit var tensorFlowHelper: TensorFlowHelper
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,6 +115,11 @@ class RecognitionMain : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         binding.unbind()
+        if (::tensorFlowHelper.isInitialized) {
+            tensorFlowHelper.close()  // Llamar a close() solo si tensorflowHelper está inicializado
+        } else {
+            Log.w("RecognitionFragment", "TensorFlowHelper no inicializado.")
+        }
     }
 
 
