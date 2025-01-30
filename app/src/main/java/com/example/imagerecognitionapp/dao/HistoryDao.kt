@@ -8,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.imagerecognitionapp.data.model.History
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HistoryDao {
@@ -15,7 +16,17 @@ interface HistoryDao {
 
     //@Insert(onConflict = OnConflictStrategy.IGNORE) // Evita duplicados automáticamente
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertHistory(history: History)
+    suspend fun insertHistory(history: History):Long
+
+    @Update
+    suspend fun updateHistory(history: History)
+
+    @Query("SELECT * FROM history WHERE id_History = :id")
+    suspend fun getById(id: Int): History?
+
+    @Query("DELETE FROM history WHERE id_History = :id")
+    suspend fun deleteHistoryById(id: Int)
+
 
     /*@Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun updateHistory(history: History)*/
@@ -23,16 +34,19 @@ interface HistoryDao {
     suspend fun getHistoryById(id: Int): History?
 
     @Query("SELECT id_History FROM History ORDER BY id_History DESC LIMIT 1")
-    suspend fun getHistoryId(): Int
+    suspend fun getHistoryId(): Int?
 
     @Query("SELECT MAX(id_History) FROM History")
     suspend fun getLastId(): Int?
 
+
     @Query("SELECT * FROM history WHERE imagePath = :imagePath LIMIT 1")
     suspend fun getHistoryByPhotoHash(imagePath: String): History?
 
-    @Query("SELECT * FROM History")
+    @Query("SELECT * FROM History ORDER BY id_History DESC")
     suspend fun getAllHistory(): List<History>
+
+
 
     //@Query("SELECT * FROM History WHERE diseaseName = :diseaseName AND section = :section")
     // suspend fun getHistoryByDiseaseAndSection(diseaseName: String, section: String): History?
@@ -49,7 +63,11 @@ interface HistoryDao {
     @Query("DELETE FROM History")
     suspend fun deleteAll()
 
-    @Query("SELECT * FROM History")
+    @Query("SELECT * FROM History ORDER BY id_History DESC")
     fun getAllHistoryItems(): LiveData<List<History>>
+
+
+    //@Query("SELECT * FROM History")
+    //fun getAllHistoryItems(): Flow<List<History>>
 
 }

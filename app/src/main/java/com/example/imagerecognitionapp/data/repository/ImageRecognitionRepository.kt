@@ -18,7 +18,7 @@ class ImageRecognitionRepository @Inject constructor(
 ) {
     private lateinit var tensorflowHelper: TensorFlowHelper
     private val classNames: List<String> = loadLabels()
-    private var detectionThreshold = 0.98f // Umbral para considerar una clase como detectada
+    private var detectionThreshold = 0.95f // Umbral para considerar una clase como detectada
     /*# Probabilidades predichas por el modelo
     predicted_probabilities = [0.1, 0.4, 0.35, 0.8, 0.95, 0.2]
     # Etiquetas reales

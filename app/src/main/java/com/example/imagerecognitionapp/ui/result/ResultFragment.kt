@@ -14,6 +14,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -74,6 +75,7 @@ class ResultFragment : Fragment() {
         //mostrarResultUI()
         final()
         btnDiseaseInfo()
+        EnabledRetroceso()
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { errorMsg ->
             if (!errorMsg.isNullOrEmpty()) {
@@ -81,6 +83,14 @@ class ResultFragment : Fragment() {
             }
         }
 
+    }
+
+    private fun EnabledRetroceso(){
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                isEnabled = true
+            }
+        })
     }
 
     private fun final(){
@@ -166,6 +176,9 @@ class ResultFragment : Fragment() {
                     putString("detectedDisease", result.diseaseName)
                     putParcelable("bitmap", bitmap) // Pasar el Bitmap
                 }
+                // Resetear el estado antes de navegar
+                sharedViewModel.reset()
+                //sharedViewModel.clearSelectedHistory()
                 findNavController().navigate(R.id.action_resultFragment_to_diseaseInfoFragment, bundle)
             }
 

@@ -1,5 +1,6 @@
 package com.example.imagerecognitionapp.data.historyItem
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
 import androidx.lifecycle.map
@@ -7,6 +8,7 @@ import androidx.lifecycle.switchMap
 import com.example.imagerecognitionapp.dao.HistoryDao
 import com.example.imagerecognitionapp.db.HistoryDb
 import com.example.imagerecognitionapp.data.model.History
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class HistoryRepository @Inject constructor(private val historyDb: HistoryDb) {
@@ -15,17 +17,28 @@ class HistoryRepository @Inject constructor(private val historyDb: HistoryDb) {
         return historyDb.HistoryDao().getHistoryByPhotoHash(photoHash)
     }
 
+
+
     // Actualizar un historial existente en la base de datos
     suspend fun updateHistory(history: History) {
-        //historyDb.HistoryDao().updateHistory(history)
+        Log.d("HistoryRepository", "Actualizando historial: ${history.id}")
+        historyDb.HistoryDao().updateHistory(history)
     }
 
     // Insertar un nuevo historial en la base de datos
-    suspend fun insertHistory(history: History) {
-        historyDb.HistoryDao().insertHistory(history)
+    suspend fun insertHistory(history: History): Long {
+        // Inserta el historial y obtiene el ID generado
+        val insertedId = historyDb.HistoryDao().insertHistory(history)
+        Log.d("HistoryRepository", "Nuevo ID generado: $insertedId")
+
+        val insertedHistory = historyDb.HistoryDao().getHistoryById(insertedId.toInt())
+        Log.d("HistoryRepository", "Historial insertado: ${insertedHistory?.id}")
+
+        // Devuelve el ID generado
+        return insertedId
     }
 
-    suspend fun getHistoryId(): Int {
+    suspend fun getHistoryId(): Int? {
         return historyDb.HistoryDao().getHistoryId()
     }
 
@@ -39,7 +52,9 @@ class HistoryRepository @Inject constructor(private val historyDb: HistoryDb) {
 
     // Get all history entries
     suspend fun getAllHistory(): List<History> {
-        return historyDb.HistoryDao().getAllHistory()
+        val historyList = historyDb.HistoryDao().getAllHistory()
+        Log.d("HistoryRepository", "Historial devuelto por BD: $historyList")
+        return historyList
     }
 
     // Get history by disease name
@@ -48,7 +63,11 @@ class HistoryRepository @Inject constructor(private val historyDb: HistoryDb) {
     }
 
     suspend fun getHistoryByImagePath(imagePath: String): History? {
-        return historyDb.HistoryDao().getHistoryByPhotoHash(imagePath)
+        //return historyDb.HistoryDao().getHistoryByPhotoHash(imagePath)
+        Log.d("HistoryRepository", "Buscando historial con hash: $imagePath")
+        val history = historyDb.HistoryDao().getHistoryByPhotoHash(imagePath)
+        Log.d("HistoryRepository", "Historial encontrado: ${history?.diseaseName}")
+        return history
     }
 
     /*suspend fun getHistoryByDiseaseAndSection(diseaseName: String, section: String): History? {
@@ -57,11 +76,19 @@ class HistoryRepository @Inject constructor(private val historyDb: HistoryDb) {
 
     // Delete specific history entry
     suspend fun deleteHistory(history: History) {
+        Log.d("HistoryRepository", "Eliminando historial con ID: ${history.id}")
         historyDb.HistoryDao().deleteHistory(history)
     }
+
+    suspend fun removeHistoryById(id: Int) {
+        historyDb.HistoryDao().deleteHistoryById(id)
+    }
+
     // Get all history as LiveData
-    fun getAllHistoryLive(): LiveData<List<History>> {
-        return historyDb.HistoryDao().getAllHistoryItems()
+    fun getAllHistoryItems(): LiveData<List<History>> {
+        val historyList = historyDb.HistoryDao().getAllHistoryItems()
+        Log.d("HistoryRepository", "Historial devuelto por BD: $historyList")
+        return historyList
     }
 
     /*suspend fun insertHistory(historyItem: HistoryItem) {

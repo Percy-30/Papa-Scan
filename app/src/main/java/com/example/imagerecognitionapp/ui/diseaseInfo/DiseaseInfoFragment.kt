@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.imagerecognitionapp.R
@@ -30,6 +31,8 @@ import com.example.imagerecognitionapp.ui.history.HistoryViewModel
 import com.example.imagerecognitionapp.ui.recognition.RecognitionViewModel
 import com.example.imagerecognitionapp.ui.result.SharedViewModel
 import com.google.android.material.tabs.TabLayoutMediator
+import com.squareup.picasso.Picasso
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.ref.WeakReference
@@ -79,38 +82,6 @@ class DiseaseInfoFragment : Fragment() {
                binding.imageDisease.setImageBitmap(bitmap)
            }
        }*/
-        sharedViewModel.compressedImage?.observe(viewLifecycleOwner) { uri ->
-            binding.imageDisease.setImageURI(uri)
-            //val bitmap = BitmapFactory.decodeFile(uri?.path)
-            //bitmap?.recycle()  // Libera la memoria del Bitmap
-            /*if (file != null) {
-                Log.d("IMAGEN", file.toString())
-                val bitmap = BitmapFactory.decodeFile(file.fragment)
-                binding.imageDisease.setImageBitmap(bitmap)
-                bitmap.recycle()
-            }*/
-        }
-
-
-
-        sharedViewModel.selectedHistoryItem.observe(viewLifecycleOwner){ historyItem ->
-            val diseaseInfo = historyItem.diseaseName
-            val section = historyItem.section
-            val image = historyItem.imagePath
-            diseaseInfo?.let {
-                binding.textDiseaseTitle.text = diseaseInfo.toString()
-                //binding.imageDisease.setImageBitmap(saveBitmapToFile(diseaseInfo.imageUri))
-            }
-            image?.let {
-                //val uri = Uri.parse(it)
-                val file = File(it)
-                val uri = Uri.fromFile(file) // Convertir el File en un Uri
-                Log.d("RUTA", uri.toString()) // Verifica que la URI sea correcta
-                //binding.imageDisease.setImageURI(uri) // Si es una URI válida
-                // Redimensionar la imagen antes de cargarla en el ImageView
-                loadImageEfficiently(uri)
-            }
-        }
 
         val diseaseName = arguments?.getString("detectedDisease") ?: "Desconocido"
         //val bitmap = arguments?.getParcelable<Bitmap>("bitmap")
@@ -131,6 +102,44 @@ class DiseaseInfoFragment : Fragment() {
             }.attach()
         }
 
+        sharedViewModel.compressedImage?.observe(viewLifecycleOwner) { uri ->
+            //binding.imageDisease.setImageURI(uri)
+            uri?.let {
+                lifecycleScope.launch {
+                    loadImageEfficientlyPicaso(it)
+                }
+            } ?: run {
+                Log.d("DiseaseInfoFragment", "No hay una imagen comprimida disponible")
+                // Aquí puedes manejar el caso en que no haya una imagen comprimida
+            }
+        }
+
+
+
+        sharedViewModel.selectedHistoryItem.observe(viewLifecycleOwner){ historyItem ->
+            historyItem?.let {
+                Log.d("DiseaseInfoFragment", "Seleccionado un elemento del historial: $historyItem")
+                val diseaseInfo = historyItem.diseaseName
+                val section = historyItem.section
+                val image = historyItem.imagePath
+
+                diseaseInfo?.let { binding.textDiseaseTitle.text = it }
+
+                image?.let {
+                    val file = File(it)
+                    val uri = Uri.fromFile(file)
+                    Log.d("RUTA", uri.toString())
+                    loadImageEfficientlyGlide(uri)
+                }
+            } ?: run {
+                Log.d("DiseaseInfoFragment", "No hay un ítem del historial seleccionado")
+                // Aquí puedes manejar el caso en que no haya un ítem del historial seleccionado
+            }
+
+        }
+
+
+
         // Guardar en historial
         /*historyViewModel.addToHistory(
             diseaseName = diseaseName,
@@ -140,22 +149,18 @@ class DiseaseInfoFragment : Fragment() {
 
     }
 
-    fun loadImageEfficiently(uri: Uri) {
+    private fun loadImageEfficientlyGlide(uri: Uri) {
         Glide.with(requireContext())
             .load(uri)
             .override(800, 600)  // Redimensiona la imagen antes de cargarla
             .into(binding.imageDisease)
     }
 
-
-    private fun saveBitmapToFile(bitmap: Bitmap): File {
-        val contextWrapper = ContextWrapper(requireContext())
-        val directory = contextWrapper.getDir("images", Context.MODE_PRIVATE)
-        val file = File(directory, "image_${UUID.randomUUID()}.jpg")
-        FileOutputStream(file).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-        }
-        return file
+    private fun loadImageEfficientlyPicaso(uri: Uri) {
+        Picasso.get()
+            .load(uri)
+            .resize(800, 600)  // Redimensiona la imagen antes de cargarla
+            .into(binding.imageDisease)
     }
 
     private fun observeViewModel() {
@@ -219,6 +224,7 @@ class DiseaseInfoFragment : Fragment() {
     // Navegar hacia el diálogo "History"
     private fun navigateToHistoryFragment(){
         try {
+            Log.d("DiseaseInfoFragment", "Navegando al fragmento de historial...")
             findNavController().navigate(R.id.action_diseaseInfoFragment_to_historyFragment)
         } catch (e: Exception) {
             Log.e("Navigation", "Error al navegar al diálogo: ${e.message}")
@@ -234,47 +240,5 @@ class DiseaseInfoFragment : Fragment() {
         //weakBitmap = null
     }
 
-/*private fun checkInternetConnectionAndFetchInfo() {
-    // Verifica si hay conexión a Internet
-    if (isNetworkAvailable()) {
-        // Si hay conexión, haz una consulta a la API para obtener información adicional
-        fetchDiseaseInfoFromAPI()
-    } else {
-        // Muestra un mensaje indicando que no hay conexión
-        Toast.makeText(context, "No hay conexión a Internet", Toast.LENGTH_SHORT).show()
-    }
-}
-
-/*private fun isNetworkAvailable(): Booln {
-    val connectivityManager =
-        requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val networkInfo = connectivityManager.activeNetworkInfo
-    return networkInfo != null && networkInfo.isConnected
-}
-
-private fun fetchDiseaseInfoFromAPI() {
-    // Aquí podrías usar una API para obtener más información sobre la enfermedad
-    // Puedes usar Retrofit, OkHttp o cualquier otra librería para hacer la consulta HTTP
-
-    val apiService = ApiClient.getApiService()
-    apiService.getDiseaseInfo().enqueue(object : Callback<DiseaseInfo> {
-        override fun onResponse(call: Call<DiseaseInfo>, response: Response<DiseaseInfo>) {
-            if (response.isSuccessful) {
-                val diseaseInfo = response.body()
-                // Actualiza la UI con la nueva información
-                diseaseInfo?.let {
-                    diseaseDescription = it.description
-                    preventionTips = it.prevention
-                    treatmentTips = it.treatment
-                    updateUI()
-                }
-            }
-        }
-
-        override fun onFailure(call: Call<DiseaseInfo>, t: Throwable) {
-            Toast.makeText(context, "Error al obtener datos", Toast.LENGTH_SHORT).show()
-        }
-    })
-}*/*/
 }
 

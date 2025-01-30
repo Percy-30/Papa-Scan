@@ -5,6 +5,7 @@ import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.text.Html
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -41,14 +42,13 @@ class DiseaseDetailFragment : Fragment() {
 
     private var weakBitmap: WeakReference<Bitmap>? = null
 
-    //private val historyViewModel: HistoryViewModel by activityViewModels()
-    private lateinit var historyViewModel: HistoryViewModel
+    private val historyViewModel: HistoryViewModel by activityViewModels()
+    //private lateinit var historyViewModel: HistoryViewModel
     private val sharedViewModel: SharedViewModel by activityViewModels()
 
-    private var isSaving = false // Variable para controlar si se está guardando
-    private lateinit var section:String
-    private var isObservingHistoryItem = false
-    private var isAddingToHistory = false
+    private lateinit var section: Section
+    private lateinit var diseaseName: String
+    private var position: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -59,99 +59,106 @@ class DiseaseDetailFragment : Fragment() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        historyViewModel = ViewModelProvider(this).get(HistoryViewModel::class.java)
+        position = arguments?.getInt("position", 0) ?: 0
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Obtén el nombre de la enfermedad y la sección de los argumentos
-        //val diseaseName = arguments?.getString("diseaseName") ?: "Desconocida"
-        //val section = arguments?.getString("section") ?: "Sin sección"
+        setupInitialData()
+        observeViewModel()
+    }
 
-        val diseaseName = arguments?.getString("diseaseName") ?: return
-        section = arguments?.getString("section") ?: return
+    private fun setupInitialData() {
+        diseaseName = arguments?.getString("diseaseName") ?: return
+        val sectionTitle = arguments?.getString("section") ?: return
+        section = Section.fromTitle(sectionTitle) ?: return
+        Log.d("DiseaseDetailFragment", "Initial section: $section")
 
-        // Observe shared bitmap
-        /*sharedViewModel.bitmap.observe(viewLifecycleOwner) { bitmap ->
-            bitmap?.let { processBitmap(it, diseaseName) }
-        }*/
-        // Observe shared bitmap path
-        /*sharedViewModel.bitmapPath.observe(viewLifecycleOwner) { bitmapPath ->
-            bitmapPath?.let {
-                val bitmap = BitmapFactory.decodeFile(bitmapPath)
-                bitmap?.let { processBitmap(it, diseaseName) }
-            }
-        }*/
-
-        sharedViewModel.compressedImage?.observe(viewLifecycleOwner) { file ->
-            if (file != null) {
-                /*lifecycleScope.launch {
-                    val lastId = historyViewModel.getLastId()
-                    if (lastId != null) {
-                        val existingHistory = historyViewModel.getHistoryById(lastId)
-                        if (existingHistory != null) {
-                            // Ya existe un registro con el mismo ID, no guardar
-                            return@launch
-                        }
-                    }*/
-                    // No existe un registro con el mismo ID, procesar la imagen
-                    processImage(file, diseaseName)
-               // }
-            }
-            /*if (file != null) {
-                val bitmap = BitmapFactory.decodeFile(file.fragment)
-                bitmap?.let { processBitmap(it, diseaseName) }
-            }*/
+        // Obtén la información de la enfermedad
+        val diseaseInfo = getDiseaseInfo(diseaseName)
+        if (diseaseInfo != null) {
+            updateUIWithDiseaseInfo(diseaseInfo, section)
+        } else {
+            Log.e("DiseaseDetailFragment", "DiseaseInfo is null")
         }
-
-        // Observe selected history item
-        sharedViewModel.selectedHistoryItem.distinctUntilChanged().observe(viewLifecycleOwner) { history ->
-            history?.let { updateUIWithHistoryDetails(it, section) }
-            //sharedViewModel.compressedImage?.removeObservers(viewLifecycleOwner)
-        }
-
-        // Observa el item seleccionado del historial
 
     }
 
-    private fun processImage(uri: Uri, diseaseName: String) {
-        // First check if entry exists
-        lifecycleScope.launch {
-        val existingHistory = historyViewModel.getHistoryByDiseaseAndSection(diseaseName)
-
-        if (existingHistory != null) {
-            // Use existing entry
-            updateUIWithDiseaseInfo(
-                DiseaseInfo(
-                    name = diseaseName,
-                    description = existingHistory.description,
-                    prevention = existingHistory.prevention,
-                    causes = existingHistory.causes,
-                    treatment = existingHistory.treatment
-                ),
-                section
-            )
-            return@launch
+    private fun observeViewModel() {
+        // Observar la imagen comprimida solo si no ha sido procesada
+        sharedViewModel.isImageProcessed.observe(viewLifecycleOwner) { isProcessed ->
+            if (!isProcessed) {
+                sharedViewModel.compressedImage?.observe(viewLifecycleOwner) { file ->
+                    file?.let {
+                        processImage(it, diseaseName)
+                        sharedViewModel.setImageProcessed(true)
+                        sharedViewModel.compressedImage?.removeObservers(viewLifecycleOwner)
+                    }
+                }
+            }
         }
 
-        // If no existing entry, proceed with new entry creation
+        // Observar el ítem de historial seleccionado
+        sharedViewModel.selectedHistoryItem.distinctUntilChanged().observe(viewLifecycleOwner) { history ->
+            if (history != null) {
+                Log.d("DiseaseDetailFragment", "Updating UI with history: $history")
+                updateUIWithHistoryDetails(history)
+            } else {
+                Log.d("DiseaseDetailFragment", "History item is not relevant for the current disease")
+                // No actualizar la UI si el ítem del historial no es relevante
+            }
+        }
+    }
+
+    private fun updateUIWithHistoryDetails(history: History) {
+        binding.apply {
+            textSectionTitle.text = section.title
+            //textSectionContent.text = when (section) {
+            val text = when (section) {
+                Section.Enfermedad -> history.description
+                Section.Tratamiento -> history.treatment
+                Section.Causas -> history.causes
+                Section.Prevencion -> history.prevention
+                else -> "Información no disponible"
+            }
+            textSectionContent.text = Html.fromHtml(text, Html.FROM_HTML_MODE_COMPACT)
+            Log.d("DiseaseDetailFragment", "Updated UI: ${textSectionContent.text}")
+        }
+    }
+
+    private fun processImage(uri: Uri, diseaseName: String) {
+        // Primero verifica si la entrada existe
         val imagePath = saveImageUriToFile(uri)
-        val diseaseInfo = getDiseaseInfo(diseaseName)
+        if (imagePath != null) {
+            val diseaseInfo = getDiseaseInfo(diseaseName)
+            Log.d("DiseaseDetailFragment", "La informacion $diseaseInfo")
+            updateUIWithDiseaseInfo(DiseaseInfo(
+                name = diseaseInfo.name,
+                description = diseaseInfo.description,
+                prevention = diseaseInfo.prevention,
+                causes = diseaseInfo.causes,
+                treatment = diseaseInfo.treatment
+            ),
+                section
+            )
 
-        val history = History(
-            diseaseName = diseaseName,
-            section = "main",
-            description = diseaseInfo.description,
-            prevention = diseaseInfo.prevention,
-            causes = diseaseInfo.causes,
-            treatment = diseaseInfo.treatment,
-            timestamp = System.currentTimeMillis(),
-            imagePath = imagePath
-        )
+            val history = History(
+                diseaseName = diseaseName,
+                section = "main",
+                description = diseaseInfo.description,
+                prevention = diseaseInfo.prevention,
+                causes = diseaseInfo.causes,
+                treatment = diseaseInfo.treatment,
+                timestamp = System.currentTimeMillis(),
+                imagePath = imagePath
+            )
 
-        historyViewModel.addToHistory(history)
-        updateUIWithDiseaseInfo(diseaseInfo, section)
+            historyViewModel.addToHistory(history)
+
+        } else {
+            Log.e("DiseaseDetailFragment", "No se pudo guardar la imagen.")
         }
     }
 
@@ -174,101 +181,52 @@ class DiseaseDetailFragment : Fragment() {
             null
         }
     }
+    private fun updateUIWithDiseaseInfo(diseaseInfo: DiseaseInfo, section: Section) {
+        Log.d("DiseaseDetailFragment", "Updating UI with section: ${section.title} and diseaseInfo: $diseaseInfo")
 
-    private fun processBitmap(bitmap: Bitmap, diseaseName: String) {
-        lifecycleScope.launch {
-            val imagePath = saveBitmapToFile(bitmap)
-            val diseaseInfo = getDiseaseInfo(diseaseName)
-
-            val history = History(
-                diseaseName = diseaseName,
-                section = "main", // Single entry per disease
-                description = diseaseInfo.description,
-                prevention = diseaseInfo.prevention,
-                causes = diseaseInfo.causes,
-                treatment = diseaseInfo.treatment,
-                timestamp = System.currentTimeMillis(),
-                imagePath = imagePath
-            )
-
-            historyViewModel.addToHistory(history)
-            //updateUIWithDiseaseInfo(diseaseInfo)
-            updateUIWithDiseaseInfo(diseaseInfo, section)
-
+        binding.apply {
+            textSectionTitle.text = section.title
+            //textSectionContent.text = getSectionContent(diseaseInfo, section)
+            textSectionContent.text = Html.fromHtml(getSectionContent(diseaseInfo, section), Html.FROM_HTML_MODE_COMPACT)
+            Log.d("DiseaseDetailFragment", "Updated UI: ${textSectionContent.text}")
         }
     }
 
-    private fun updateUIWithHistoryDetails(history: History, currentSection: String) {
-        binding.apply {
-            textSectionTitle.text = currentSection
-            textSectionContent.text = when (currentSection) {
-                "Enfermedad" -> history.description
-                "Tratamiento" -> history.treatment
-                "Causas" -> history.causes
-                "Prevención" -> history.prevention
-                else -> "Información no disponible"
-            }
+    private fun getSectionContent(diseaseInfo: DiseaseInfo, section: Section): String {
+        return when (section) {
+            Section.Enfermedad -> diseaseInfo.description
+            Section.Tratamiento -> diseaseInfo.treatment
+            Section.Causas -> diseaseInfo.causes
+            Section.Prevencion -> diseaseInfo.prevention
+            else -> "Información no disponible"
         }
     }
-    private fun updateUIWithDiseaseInfo(diseaseInfo: DiseaseInfo, section: String) {
+
+    /*private fun updateUIWithDiseaseInfo(diseaseInfo: DiseaseInfo, section: Section) {
+        Log.d("DiseaseDetailFragment", "Updating UI with section: ${section.title} and diseaseInfo: $diseaseInfo")
         binding.apply {
-            textSectionTitle.text = section
+            textSectionTitle.text = section.title
             textSectionContent.text = when (section) {
-                "Enfermedad" -> diseaseInfo.description
-                "Tratamiento" -> diseaseInfo.treatment
-                "Causas" -> diseaseInfo.causes
-                "Prevención" -> diseaseInfo.prevention
+                is Section.Enfermedad -> diseaseInfo.description
+                is Section.Tratamiento -> diseaseInfo.treatment
+                is Section.Causas -> diseaseInfo.causes
+                is Section.Prevencion -> diseaseInfo.prevention
                 else -> "Información no disponible"
             }
+            Log.d("DiseaseDetailFragment","Updated UI: ${textSectionContent.text}")
         }
-    }
+    }*/
 
-    private fun updateUIWithDiseaseInfo(diseaseInfo: DiseaseInfo) {
-        binding.apply {
-            // Since we're working with a single view setup based on sections
-            //textSectionContent.text = when (textSectionTitle.text.toString()) {
-            textSectionContent.text = when (textSectionTitle.text.toString()) {
-                "Enfermedad" -> diseaseInfo.description
-                "Tratamiento" -> diseaseInfo.treatment
-                "Causas" -> diseaseInfo.causes
-                "Prevención" -> diseaseInfo.prevention
-                else -> "Información no disponible"
-            }
-        }
-    }
-
-    private suspend fun getDiseaseInfo(diseaseName: String): DiseaseInfo {
-        return withContext(Dispatchers.IO) {
-            diseaseDatabase[diseaseName] ?: DiseaseInfo(
-                name = "Desconocida",
-                description = "Descripción no disponible",
-                prevention = "Prevención no disponible",
-                causes = "Cuasas No disponible",
-                treatment = "Tratamiento no disponible"
-            )
-        }
-    }
-
-    private fun saveBitmapToFile(bitmap: Bitmap?): String? {
-        if (bitmap == null) {
-            Log.e("SaveBitmap", "Bitmap nulo, no se puede guardar.")
-            return null
-        }
-        val contextWrapper = ContextWrapper(requireContext())
-        val directory = contextWrapper.getDir("imageDir", Context.MODE_PRIVATE)
-        val fileName = "IMG_${UUID.randomUUID()}.jpg"
-        val file = File(directory, fileName)
-
-        return try {
-            val outputStream: OutputStream = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
-            outputStream.flush()
-            outputStream.close()
-            file.absolutePath
-        } catch (e: IOException) {
-            Log.e("SaveBitmap", "Error al guardar la imagen", e)
-            null
-        }
+    private fun getDiseaseInfo(diseaseName: String): DiseaseInfo {
+        // Aquí debes asegurarte de que la enfermedad tenga un tipo asociado.
+        return diseaseDatabase[diseaseName] ?: DiseaseInfo(
+            name = "Desconocida",
+            description = "Descripción no disponible",
+            prevention = "Prevención no disponible",
+            causes = "Causas no disponible",
+            treatment = "Tratamiento no disponible"
+            // Asegúrate de asignar un tipo por defecto
+        )
     }
 
 
@@ -276,21 +234,21 @@ class DiseaseDetailFragment : Fragment() {
         super.onDestroyView()
         _binding = null
 
-       // sharedViewModel.compressedImage?.removeObservers(viewLifecycleOwner)
+        // sharedViewModel.compressedImage?.removeObservers(viewLifecycleOwner)
         //weakBitmap?.get()?.recycle()  // Libera la memoria del bitmap si es necesario
         //weakBitmap = null
     }
 
     companion object {
-        fun newInstance(diseaseName: String, section: String): DiseaseDetailFragment {
+        fun newInstance(diseaseName: String, section: String, position: Int): DiseaseDetailFragment {
             val fragment = DiseaseDetailFragment()
             val args = Bundle().apply {
                 putString("diseaseName", diseaseName)
                 putString("section", section)
+                putInt("position", position)
             }
             fragment.arguments = args
             return fragment
         }
     }
 }
-

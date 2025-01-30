@@ -1,4 +1,4 @@
-Early_Blight
-Healthy
-Late_Blight
-No identificado
+Quemazon
+Papa_Saludable
+Rancha
+No_Identificado

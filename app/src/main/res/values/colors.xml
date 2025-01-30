@@ -5,6 +5,8 @@
     <color name="green">#4CAF50</color>
     <color name="red">#E91E63</color>
     <color name="orange">#FF5722</color>
+    <color name="correct">#3AD141</color>
+    <color name="load">#03E0F4</color>
 
     <color name="colorPrimary">#09D1C7</color>
     <color name="colorPrimaryDark">#0C6478</color>

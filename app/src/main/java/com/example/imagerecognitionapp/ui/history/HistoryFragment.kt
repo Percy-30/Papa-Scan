@@ -1,16 +1,21 @@
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.room.Update
+import com.bumptech.glide.Glide
 import com.example.imagerecognitionapp.R
 import com.example.imagerecognitionapp.data.diseaseName.DiseaseInfo
 import com.example.imagerecognitionapp.data.diseaseName.diseaseDatabase
@@ -49,9 +54,20 @@ class HistoryFragment : Fragment() {
         setupToolbar()
         setupRecyclerView()
         observeViewModel()
+        EnabledRetroceso()
+
     }
+
+    private fun EnabledRetroceso(){
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                isEnabled = true
+            }
+        })
+    }
+
     // Método para obtener los detalles de la enfermedad
-    private suspend fun getDiseaseInfo(diseaseName: String): DiseaseInfo {
+    /*private suspend fun getDiseaseInfo(diseaseName: String): DiseaseInfo {
         // Aquí deberías hacer alguna consulta a la base de datos o repositorio
         return diseaseDatabase[diseaseName] ?: DiseaseInfo(
             name = diseaseName,
@@ -60,43 +76,35 @@ class HistoryFragment : Fragment() {
             causes = "Causas no disponible",
             treatment = "Tratamiento no disponible"
         )
-    }
+    }*/
 
     private fun setupRecyclerView() {
-        historyAdapter = HistoryAdapter(
-            onDeleteClick = { historyItem ->
-                val history = History(
-                    diseaseName = historyItem.diseaseName,
-                    section = "main",
-                    description = "",
-                    prevention = "",
-                    causes = "",
-                    treatment = "",
-                    timestamp = historyItem.timestamp,
-                    imagePath = historyItem.imagePath
-                )
-                historyViewModel.removeFromHistory(historyItem.diseaseName)
-            },
-            onItemClick = { historyItem ->
-                lifecycleScope.launch {
-                    val diseaseInfo = getDiseaseInfo(historyItem.diseaseName)
+            historyAdapter = HistoryAdapter(
+                onDeleteClick = { historyItem ->
+                    //historyViewModel.removeFromHistory(historyItem.diseaseName)
+                    //Log.d("HistoryFragment", "Eliminando historial con nombre de enfermedad: ${historyItem.diseaseName}")
+                    // Eliminar por id
+                    historyViewModel.removeFromHistoryById(historyItem.id)  // Llama a un método que elimina por id
+                    Log.d("HistoryFragment", "Eliminando historial con id: ${historyItem.id}")
 
-                    val history = History(
-                        diseaseName = historyItem.diseaseName,
-                        section = "main",
-                        description = diseaseInfo.description,
-                        prevention = diseaseInfo.prevention,
-                        causes = diseaseInfo.causes,
-                        treatment = diseaseInfo.treatment,
-                        timestamp = historyItem.timestamp,
-                        imagePath = historyItem.imagePath
-                    )
-
-                    sharedViewModel.setSelectedHistoryItem(history)
-                    findNavController().navigate(R.id.action_historyFragment_to_diseaseInfoFragment)
+                },
+                onItemClick = { historyItem ->
+                    lifecycleScope.launch {
+                        // Obtener el historial más actualizado directamente de la base de datos
+                        val updatedHistory = historyViewModel.getHistoryById(historyItem.id)
+                        Log.d("HistoryFragment", "ACTUALIZED ${updatedHistory}")
+                        updatedHistory?.let { //history ->
+                            // Clear previous data first
+                            // En lugar de pasar `null`, pasamos una instancia con valores por defecto
+                            //sharedViewModel.clearSelectedHistory()
+                            sharedViewModel.setSelectedHistoryItem(it)
+                            // Forzar una recarga del historial
+                            //historyViewModel.getAllHistory()
+                            findNavController().navigate(R.id.action_historyFragment_to_diseaseInfoFragment)
+                        }
+                       }
                 }
-            }
-        )
+            )
 
         binding.recyclerViewHistory.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -127,6 +135,24 @@ class HistoryFragment : Fragment() {
     // En el Fragment
     private fun observeViewModel() {
         historyViewModel.historyList.observe(viewLifecycleOwner) { histories ->
+            Log.d("HistoryFragment", "Actualizando lista: ${histories.size} elementos")
+
+            val historyItems = histories.map { history ->
+                HistoryItem(
+                    id = history.id,
+                    diseaseName = history.diseaseName,
+                    section = history.section,
+                    timestamp = history.timestamp,
+                    imagePath = history.imagePath ?: ""
+                )
+            }
+
+            historyAdapter.submitList(historyItems.toList())
+            binding.recyclerViewHistory.visibility = if (histories.isNotEmpty()) View.VISIBLE else View.GONE
+        }
+
+        /*historyViewModel.historyList.observe(viewLifecycleOwner) { histories ->
+            Log.d("UI", "Se actualizó la lista del historial: ${histories.size} elementos -> Datos: $histories")
             val historyItems = histories.map { history ->
                 HistoryItem(
                     diseaseName = history.diseaseName,
@@ -136,10 +162,12 @@ class HistoryFragment : Fragment() {
                 )
             }
             historyAdapter.submitList(historyItems)
+            Log.d("UI", "Lista enviada al adaptador: ${historyItems.size} elementos")
             binding.recyclerViewHistory.visibility =
                 if (histories.isNotEmpty()) View.VISIBLE else View.GONE
-        }
+        }*/
     }
+
 
 
     private fun setupToolbar() {
@@ -193,6 +221,7 @@ class HistoryFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        //sharedViewModel.clearSelectedHistory()
         _binding = null
     }
 }

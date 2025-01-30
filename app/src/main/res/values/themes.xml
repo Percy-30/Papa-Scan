@@ -10,6 +10,27 @@
     <style name="exampleToast">
         <item name="stTextColor">#FDFDFD</item>
         <item name="stTextBold">true</item>
-        <item name="stColorBackground">#17DB1F</item>
+        <item name="stColorBackground">@color/load</item>
     </style>
+    <style name="exampleToastCorrect">
+        <item name="stTextColor">#FDFDFD</item>
+        <item name="stTextBold">true</item>
+        <item name="stIconStart">@drawable/ic_photo_load_done</item>
+        <item name="stColorBackground">@color/correct</item>
+    </style>
+
+    <style name="exampleToastError">
+        <item name="stTextColor">#FDFDFD</item>
+        <item name="stTextBold">true</item>
+        <item name="stIconStart">@drawable/ic_photo_load_error</item>
+        <item name="stColorBackground">#E91E63</item>
+    </style>
+
+    <style name="exampleToastProcessImage">
+        <item name="stTextColor">#FDFDFD</item>
+        <item name="stTextBold">true</item>
+        <item name="stIconStart">@drawable/ic_advertencia</item>
+        <item name="stColorBackground">#FF9800</item>
+    </style>
+
 </resources>

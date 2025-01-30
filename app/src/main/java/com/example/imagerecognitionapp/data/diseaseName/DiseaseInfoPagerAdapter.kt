@@ -3,23 +3,38 @@ package com.example.imagerecognitionapp.data.diseaseName
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.imagerecognitionapp.ui.diseaseInfo.DiseaseDetailFragment
+import com.example.imagerecognitionapp.ui.diseaseInfo.Section
 
 class DiseaseInfoPagerAdapter(fragment: Fragment, private val diseaseName: String) :
     FragmentStateAdapter(fragment) {
 
-    override fun getItemCount(): Int = 4 // Número de pestañas
+    // Lista de secciones usando la sealed class
+    private val sections = listOf(
+        Section.Enfermedad,
+        Section.Tratamiento,
+        Section.Causas,
+        Section.Prevencion
+    )
+
+    /*private val sections = listOf(
+        "Enfermedad",
+        "Tratamiento",
+        "Causas",
+        "Prevención"
+    )*/
+
+    override fun getItemCount(): Int = sections.size
 
     override fun createFragment(position: Int): Fragment {
-        val section = when (position) {
-            0 -> "Enfermedad"
-            1 -> "Tratamiento"
-            2 -> "Causas"
-            3 -> "Prevención"
-            else -> "Otro"
-        }
-        return DiseaseDetailFragment.newInstance(diseaseName, section)
+        //require(position in sections.indices) { "Posición inválida: $position" }
+        val section = sections[position]
+        //return DiseaseDetailFragment.newInstance(diseaseName, section.title)
+        // Pasamos la posición para identificar únicamente cada fragmento
+        return DiseaseDetailFragment.newInstance(diseaseName, section.title, position)
+        //return DiseaseDetailFragment.newInstance(diseaseName, sections[position])
     }
 
+    // override fun getItemCount(): Int = 4 // Número de pestañas
     /*override fun createFragment(position: Int): Fragment {
         return when (position) {
             0 -> DiseaseDetailFragment.newInstance(diseaseName, "Enfermedad")

@@ -9,7 +9,9 @@ import com.example.imagerecognitionapp.data.diseaseName.DiseaseInfo
 import com.example.imagerecognitionapp.data.historyItem.HistoryRepository
 import com.example.imagerecognitionapp.data.model.History
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.security.MessageDigest
 import javax.inject.Inject
 
@@ -18,30 +20,61 @@ import javax.inject.Inject
 class HistoryViewModel @Inject constructor(private val historyRepository: HistoryRepository) : ViewModel() {
     //private val _historyList = MutableLiveData<List<HistoryItem>>(emptyList())
     //val historyList: LiveData<List<HistoryItem>> = _historyList
-    private val _historyList = MutableLiveData<List<History>>()
-    val historyList: LiveData<List<History>> = _historyList
+    //private val _historyList = MutableLiveData<List<History>>()
+    val historyList: LiveData<List<History>> get() = historyRepository.getAllHistoryItems()
+    //val historyList: LiveData<List<History>> = _historyList
 
     private val _selectedDisease = MutableLiveData<DiseaseInfo>()
     val selectedDisease: LiveData<DiseaseInfo> = _selectedDisease
 
     init {
-        //loadHistory()}
-        historyRepository.getAllHistoryLive().observeForever { histories ->
-            _historyList.value = histories
-        }
+        //loadHistory()
     }
 
     fun addToHistory(history: History) {
         viewModelScope.launch {
+            historyRepository.insertHistory(history)
+            //loadHistory()
+            /*historyRepository.insertHistory(history)
+            loadHistory()
+            // 🔥 Forzar actualización del historial después de insertar
+            val updatedHistoryList = historyRepository.getAllHistory()
+            withContext(Dispatchers.Main) {
+                _historyList.value = updatedHistoryList
+                Log.d("HistoryViewModel", "Historial actualizado: $updatedHistoryList")
+            }*/
+            //loadHistory()
+            // Verifica si el ID es 0, indicando que es un nuevo historial
+            /*if (history.id == 0) {
+                // Insertar historial y obtener el ID generado automáticamente
+                val newId = historyRepository.insertHistory(history)
+                Log.d("HistoryViewModel", "Historial agregado con ID: $newId")
+            } else {
+                // Actualizar historial existente
+                Log.d("HistoryViewModel", "Actualizando historial con ID: ${history.id}")
+                historyRepository.updateHistory(history)
+            }
 
-            // Check for existing entry by disease name and section
+            loadHistory()  // Recargar la lista después de actualizar o insertar*/
+        }
+    }
+
+
+
+
+
+
+    /*fun addToHistory(history: History) {
+        viewModelScope.launch {
+            //historyRepository.insertHistory(history)
+            //loadHistory() // Reload immediately after insert
             val existingHistory = historyRepository.getHistoryByDiseaseAndSection(history.diseaseName)
 
-            //if (existingHistory == null) {
+            if (existingHistory == null) {
+                // Insertar nuevo historial si no existe
                 historyRepository.insertHistory(history)
-                loadHistory() // Reload immediately after insert
-            /*} else {
-                // Update the existing entry instead of creating a new one
+            } else {
+                // Actualizar el existente en lugar de agregar duplicado
                 val updatedHistory = existingHistory.copy(
                     description = history.description,
                     prevention = history.prevention,
@@ -50,36 +83,10 @@ class HistoryViewModel @Inject constructor(private val historyRepository: Histor
                     timestamp = System.currentTimeMillis()
                 )
                 historyRepository.updateHistory(updatedHistory)
-                loadHistory()
-            }*/
-
-            // Verificar si ya existe una entrada con la misma ruta de imagen
-            /*val existingHistoryByImage = history.imagePath?.let { path ->
-                historyRepository.getHistoryByPhotoHash(path)
             }
-
-            if (existingHistoryByImage != null) {
-                // Si existe una entrada con la misma imagen, actualizar la existente
-                historyRepository.updateHistory(history.copy(
-                    id = existingHistoryByImage.id,
-                    section = "main"
-                ))
-            } else {
-            //val existingHistory = historyRepository.getHistoryByDiseaseAndSection(history.diseaseName)
-
-
-           // if (existingHistory == null) {
-                historyRepository.insertHistory(history.copy(section = "main"))
-                loadHistory()
-           }*/
+            loadHistory() // Actualizar la lista después de la operación
         }
-    }
-
-    fun calculatePhotoHash(photoBytes: ByteArray): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-        val hashBytes = digest.digest(photoBytes)
-        return hashBytes.joinToString("") { "%02x".format(it) }
-    }
+    }*/
 
     /*fun removeFromHistory(diseaseName: String, section: String) {
         viewModelScope.launch {
@@ -100,6 +107,31 @@ class HistoryViewModel @Inject constructor(private val historyRepository: Histor
         }
     }
 
+    // En el ViewModel
+    fun removeFromHistoryById(id: Int) {
+        // Aquí va la lógica para eliminar el historial por id, por ejemplo, llamando al repositorio o a la base de datos
+        viewModelScope.launch {
+            historyRepository.getHistoryById(id)?.let { history ->
+                historyRepository.deleteHistory(history)
+               //loadHistory()  // Recargar la lista después de eliminar
+                // Actualiza la lista de historial después de la eliminación
+                //_historyList.value = historyRepository.getAllHistory() // O recarga los datos
+                //_historyList.value = historyRepository.getAllHistory()  // Aquí deberías obtener los datos
+            }
+        }
+    }
+
+
+
+    // Obtener todos los historiales (opcional, pero útil si necesitas datos sin LiveData)
+    /*fun getAllHistory() {
+        viewModelScope.launch {
+            val historyList = historyRepository.getAllHistory()
+            Log.d("HistoryViewModel", "Historial recuperado desde BD: ${historyList.size} elementos")
+
+        }
+    }*/
+
     suspend fun getLastId(): Int? {
         return historyRepository.getLastId()
     }
@@ -111,18 +143,34 @@ class HistoryViewModel @Inject constructor(private val historyRepository: Histor
 
     fun clearHistory() {
         viewModelScope.launch {
-           // historyRepository.deleteAll()
+           //historyRepository.deleteAll()
             loadHistory()
         }
     }
 
     private fun loadHistory() {
         viewModelScope.launch {
-            val histories = historyRepository.getAllHistory()
-            _historyList.postValue(histories)
-            //_historyList.postValue(histories.distinctBy { it.diseaseName }) // Only get unique diseases
+            //val histories = historyRepository.getAllHistory()
+            // Llamar al repositorio para obtener los datos
+                val updatedList = historyRepository.getAllHistory()
+                withContext(Dispatchers.Main) {
+                    //_historyList.postValue(updatedList)
+                }
+              // Aquí deberías obtener los datos
+            //Log.d("HistoryViewModel", "Historial refrescado: ${histories.size} elementos")
+            //_historyList.postValue(histories)  // Asegura que los datos estén actualizados
         }
     }
+
+    //fun getAllHistory() = historyRepository.getAllHistoryLive()  // Si usas LiveData en el repositorio
+
+    fun updateHistory(history: History) {
+        viewModelScope.launch {
+            historyRepository.updateHistory(history)
+            loadHistory()
+        }
+    }
+
 
     fun setSelectedDisease(diseaseInfo: DiseaseInfo) {
         _selectedDisease.value = diseaseInfo
@@ -136,8 +184,19 @@ class HistoryViewModel @Inject constructor(private val historyRepository: Histor
         return historyRepository.getHistoryByImagePath(imagePath)
     }
 
+
+
     fun updateCurrentDisease(diseaseInfo: DiseaseInfo) {
         //_currentDisease.value = diseaseInfo
+    }
+
+    /**
+     * Calcular hash de una imagen (SHA-256)
+     */
+    fun calculatePhotoHash(photoBytes: ByteArray): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(photoBytes)
+        return hashBytes.joinToString("") { "%02x".format(it) }
     }
 
 }

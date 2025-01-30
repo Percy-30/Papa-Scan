@@ -25,12 +25,12 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor (
     application: Application,
-    private val imageRecognitionRepository: ImageRecognitionRepository,
+    //private val imageRecognitionRepository: ImageRecognitionRepository,
     //private val cameraRepository: CameraRepository
 ) :AndroidViewModel(application){
 
     // LiveData para los resultados de reconocimiento de la imagen
-    private val _recognitionResult = MutableLiveData<RecognitionResult>()
+    /*private val _recognitionResult = MutableLiveData<RecognitionResult>()
     val recognitionResult: LiveData<RecognitionResult> get() = _recognitionResult
 
     private val _bitmapFlow = MutableStateFlow<Bitmap?>(null)
@@ -67,7 +67,7 @@ class MainViewModel @Inject constructor (
                 _loading.postValue(false)
             }
         }
-    }*/
+    }*/*/
 
 
 }

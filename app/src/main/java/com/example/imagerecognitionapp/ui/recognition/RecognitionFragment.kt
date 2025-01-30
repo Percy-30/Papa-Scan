@@ -23,6 +23,7 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -101,6 +102,16 @@ class RecognitionFragment : Fragment() {
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
+
+        EnabledRetroceso()
+    }
+
+    private fun EnabledRetroceso(){
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                isEnabled = true
+            }
+        })
     }
 
     private fun requestCameraPermission() {
@@ -194,7 +205,8 @@ class RecognitionFragment : Fragment() {
             findNavController().navigate(R.id.action_recognitionFragment_to_fragmentAlertDialog)
         } catch (e: Exception) {
             Log.e("Navigation", "Error navigating to AlertDialog: ${e.message}")
-            Toast.makeText(requireContext(), "Error al mostrar el diálogo", Toast.LENGTH_SHORT).show()
+            showToastError("Error al mostrar el diálogo")
+        //Toast.makeText(requireContext(), "Error al mostrar el diálogo", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -264,7 +276,7 @@ class RecognitionFragment : Fragment() {
 
            imgPhotoPreview.setOnClickListener{
                if (cargeImage){
-                   showToast("Ya se cargo la imagen ahora debe procesar......")
+                   showToastProccessImage("Ya se cargo la imagen ahora debe procesar.... O Tomar otra foto")
                    //CloseMenuFlotant()
                    //binding.imgPhotoPreview.setImageBitmap(null)
                    //cargeImage = false
@@ -302,7 +314,8 @@ class RecognitionFragment : Fragment() {
             if (cargeImage) {
                 ProcesarImagen()
             } else {
-                Toast.makeText(requireContext(), "Debe abrir el menú para realizar la acción", Toast.LENGTH_SHORT).show()
+               //Toast.makeText(requireContext(), "Debe abrir el menú para realizar la acción", Toast.LENGTH_SHORT).show()
+                showToastError("Debe cargar la imagen para procesar")
             }
         }
     }
@@ -425,6 +438,8 @@ class RecognitionFragment : Fragment() {
                 binding.imgPhotoPreview.setImageURI(Uri.parse(it))
                 binding.imgPhotoPreview.visibility = View.VISIBLE
                 cargeImage = true
+                //Toast.makeText(requireContext(), "Imagen cargada de la camara", Toast.LENGTH_SHORT).show()
+                showToastCorrect("Imagen cargada con éxito")
                 // Limpiar el savedStateHandle para evitar mostrar la misma imagen múltiples veces
                 findNavController().currentBackStackEntry?.savedStateHandle?.remove<String>("image_uri")
             }
@@ -478,6 +493,16 @@ class RecognitionFragment : Fragment() {
         //StyleableToast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         StyleableToast.makeText(requireContext(), message, R.style.exampleToast).show()
     }
+    private fun showToastCorrect(message: String){
+        StyleableToast.makeText(requireContext(), message, R.style.exampleToastCorrect).show()
+    }
+    private fun showToastError(message: String){
+        StyleableToast.makeText(requireContext(), message, R.style.exampleToastError).show()
+    }
+
+    private fun   showToastProccessImage(message: String){
+        StyleableToast.makeText(requireContext(), message, R.style.exampleToastProcessImage).show()
+    }
 
     //Maneja el resultado de la selección de imagen (Android 8 - Android 10)
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -503,8 +528,8 @@ class RecognitionFragment : Fragment() {
                 CloseMenuFlotant()
                 cargeImage = true
             }
-            showToast("Imagen cargada con éxito")
-        } ?: showToast("No se pudo cargar la imagen")
+            showToastCorrect("Imagen cargada con éxito")
+        } ?: showToastError("No se pudo cargar la imagen")
     }
 
 
@@ -516,9 +541,11 @@ class RecognitionFragment : Fragment() {
                 loadImageEfficiently(it)
                 CloseMenuFlotant()
                 cargeImage = true
-                Toast.makeText(requireContext(), "Imagen cargada con éxito", Toast.LENGTH_SHORT).show()
+                showToastCorrect("Imagen cargada con éxito")
+                //Toast.makeText(requireContext(), "Imagen cargada con éxito", Toast.LENGTH_SHORT).show()
             } ?: run {
-                Toast.makeText(requireContext(), "No se pudo cargar la imagen", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(requireContext(), "No se pudo cargar la imagen", Toast.LENGTH_SHORT).show()
+                showToastError("No se pudo cargar la imagen")
             }
         }
 

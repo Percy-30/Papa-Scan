@@ -22,7 +22,8 @@ object RoomHelper {
             app,
             HistoryDb::class.java,
             "History_database"
-        )   .fallbackToDestructiveMigration()
+        )
+            .fallbackToDestructiveMigration()
             .build()
     // Si no necesitas migración, usa esto
     // para borrar la base de datos vieja.

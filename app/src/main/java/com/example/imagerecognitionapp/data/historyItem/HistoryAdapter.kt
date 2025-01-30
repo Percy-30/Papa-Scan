@@ -7,11 +7,13 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ListAdapter
 import android.widget.TextView
+import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.imagerecognitionapp.R
 import com.example.imagerecognitionapp.databinding.ItemHistoryCardBinding
+import com.example.imagerecognitionapp.ui.history.HistoryItemDiffCallback
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -23,8 +25,9 @@ class HistoryAdapter(
 
     //private var items = mutableListOf<HistoryItem>()
     private var historyItems = emptyList<HistoryItem>()
+    private val differ = AsyncListDiffer(this, HistoryItemDiffCallback())
 
-    private val diffCallback = object : DiffUtil.ItemCallback<HistoryItem>() {
+    /*private val diffCallback = object : DiffUtil.ItemCallback<HistoryItem>() {
         override fun areItemsTheSame(oldItem: HistoryItem, newItem: HistoryItem): Boolean {
             return oldItem.diseaseName == newItem.diseaseName &&
                     oldItem.section == newItem.section
@@ -33,10 +36,11 @@ class HistoryAdapter(
         override fun areContentsTheSame(oldItem: HistoryItem, newItem: HistoryItem): Boolean {
             return oldItem == newItem
         }
-    }
+    }*/
 
     fun submitList(newItems: List<HistoryItem>) {
-        val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+        differ.submitList(newItems)
+        /*val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize(): Int = historyItems.size
             override fun getNewListSize(): Int = newItems.size
 
@@ -56,32 +60,43 @@ class HistoryAdapter(
         })
 
         historyItems = newItems
-        diffResult.dispatchUpdatesTo(this)
+        diffResult.dispatchUpdatesTo(this)*/
     }
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
-        return HistoryViewHolder(
+        val binding = ItemHistoryCardBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return HistoryViewHolder(binding)
+        /*return HistoryViewHolder(
             ItemHistoryCardBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
                 false
             )
-        )
+        )*/
     }
 
     override fun onBindViewHolder(holder: HistoryViewHolder, position: Int) {
-        holder.bind(historyItems[position])
+        //holder.bind(historyItems[position])
+        val historyItem = differ.currentList[position]
+        holder.bind(historyItem, onDeleteClick, onItemClick)
+        //holder.bind(differ.currentList[position])
     }
 
     //override fun getItemCount() = items.size
-    override fun getItemCount(): Int = historyItems.size
+    //override fun getItemCount(): Int = historyItems.size
+    override fun getItemCount(): Int = differ.currentList.size
 
     inner class HistoryViewHolder(
         private val binding: ItemHistoryCardBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: HistoryItem) {
+        fun bind(item: HistoryItem, onDeleteClick: (HistoryItem) -> Unit,
+                 onItemClick: (HistoryItem) -> Unit) {
             binding.apply {
                 // Carga de la imagen con Glide
                 /*Glide.with(imageViewDisease.context)
