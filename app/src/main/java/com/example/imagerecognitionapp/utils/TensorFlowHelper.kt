@@ -31,7 +31,7 @@ class TensorFlowHelper @Inject constructor(@ApplicationContext private val conte
     private lateinit var inputTensor: Tensor
     private lateinit var outputTensor: Tensor
     private val model: Interpreter
-    private val inputSize = 250  // Tamaño de entrada esperado por el modelo
+    private val inputSize = 256  // Cambia de 250 a 512  // Tamaño de entrada esperado por el modelo
 
     private var error: String? = null
 

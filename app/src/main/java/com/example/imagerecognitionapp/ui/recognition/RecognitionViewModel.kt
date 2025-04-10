@@ -40,6 +40,19 @@ class RecognitionViewModel @Inject constructor(
     private val imageRecognitionRepository: ImageRecognitionRepository
 ) : AndroidViewModel(application) {
 
+    // Guarda un flag para saber que queremos abrir la cámara después de obtener permiso
+// En RecognitionViewModel.kt
+    private val _openCameraAfterPermission = MutableLiveData<Boolean>(false)
+    val openCameraAfterPermission: LiveData<Boolean> = _openCameraAfterPermission
+
+    fun setOpenCameraAfterPermission(open: Boolean) {
+        _openCameraAfterPermission.value = open
+    }
+
+    fun shouldOpenCameraAfterPermission(): Boolean {
+        return _openCameraAfterPermission.value == true
+    }
+
     private val tensorFlowHelper: TensorFlowHelper = TensorFlowHelper(application)
 
     // LiveData para observar el resultado del reconocimiento

@@ -1,3 +1,4 @@
+import android.animation.Animator
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +8,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -15,10 +17,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.room.Update
+import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.example.imagerecognitionapp.R
 import com.example.imagerecognitionapp.data.diseaseName.DiseaseInfo
-import com.example.imagerecognitionapp.data.diseaseName.diseaseDatabase
 import com.example.imagerecognitionapp.data.historyItem.HistoryAdapter
 import com.example.imagerecognitionapp.data.historyItem.HistoryItem
 import com.example.imagerecognitionapp.data.model.History
@@ -55,6 +57,7 @@ class HistoryFragment : Fragment() {
         setupRecyclerView()
         observeViewModel()
         EnabledRetroceso()
+        setupClearAllButton() // Agrega esta línea
 
     }
 
@@ -64,6 +67,62 @@ class HistoryFragment : Fragment() {
                 isEnabled = true
             }
         })
+    }
+
+    private fun setupClearAllButton() {
+        val btnClearAll = binding.btndeleteallhistory
+        val lottieAnimation = binding.btnDeleteallhistorylottieAnimationView
+
+        btnClearAll.setOnClickListener {
+            // Mostrar diálogo de confirmación
+            showClearHistoryDialog(lottieAnimation)
+        }
+    }
+
+    private fun showClearHistoryDialog(lottieAnimation: LottieAnimationView) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Vaciar historial")
+            .setMessage("¿Estás seguro de que quieres eliminar todo el historial?")
+            .setPositiveButton("Eliminar todo") { _, _ ->
+                // Animación al confirmar
+                lottieAnimation.speed = 1.5f
+                lottieAnimation.playAnimation()
+
+                lottieAnimation.addAnimatorListener(object : Animator.AnimatorListener {
+                    override fun onAnimationStart(animation: Animator) {}
+                    override fun onAnimationCancel(animation: Animator) {}
+                    override fun onAnimationRepeat(animation: Animator) {}
+
+                    override fun onAnimationEnd(animation: Animator) {
+                        lifecycleScope.launch {
+                            try {
+                                // Vaciar el historial
+                                historyViewModel.clearAllHistory()
+                                // Actualizar UI
+                                binding.recyclerViewHistory.visibility = View.GONE
+                                binding.noHistoryTextView.visibility = View.VISIBLE
+                                // Mostrar confirmación
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Historial vaciado",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } catch (e: Exception) {
+                                Log.e("HistoryFragment", "Error al vaciar historial", e)
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Error al vaciar el historial",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } finally {
+                                lottieAnimation.frame = 0
+                            }
+                        }
+                    }
+                })
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     // Método para obtener los detalles de la enfermedad
@@ -148,7 +207,21 @@ class HistoryFragment : Fragment() {
             }
 
             historyAdapter.submitList(historyItems.toList())
-            binding.recyclerViewHistory.visibility = if (histories.isNotEmpty()) View.VISIBLE else View.GONE
+            //binding.recyclerViewHistory.visibility = if (histories.isNotEmpty()) View.VISIBLE else View.GONE
+
+            // Mostrar/ocultar RecyclerView y texto de historial vacío
+            val hasHistory = histories.isNotEmpty()
+            binding.recyclerViewHistory.visibility = if (hasHistory) View.VISIBLE else View.GONE
+            binding.noHistoryTextView.visibility = if (hasHistory) View.GONE else View.VISIBLE
+
+            // Habilitar/deshabilitar botón según si hay historial
+            binding.btndeleteallhistory.isEnabled = hasHistory
+            binding.btnDeleteallhistorylottieAnimationView.isEnabled = hasHistory
+
+            // Cambiar opacidad para indicar estado deshabilitado
+            val alphaValue = if (hasHistory) 1.0f else 0.5f
+            binding.btndeleteallhistory.alpha = alphaValue
+            binding.btnDeleteallhistorylottieAnimationView.alpha = alphaValue
         }
 
         /*historyViewModel.historyList.observe(viewLifecycleOwner) { histories ->

@@ -16,6 +16,7 @@
 
         <!-- TODO: Update blank fragment layout -->
         <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottieAnimationfragment_splash"
             android:layout_width="match_parent"
             android:layout_height="300dp"
             app:lottie_fileName="papa.json"
@@ -24,13 +25,14 @@
             app:lottie_autoPlay="true" />
 
         <TextView
+            android:id="@+id/text_fragment_splash"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAlignment="center"
             android:textStyle="bold"
             android:text="@string/app"
             android:layout_marginTop="10dp"
-            android:textSize="24sp"
+            android:textSize="30sp"
             app:layout_constraintBottom_toTopOf="@+id/linearEdit"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.487"

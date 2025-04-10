@@ -1,6 +1,7 @@
 package com.example.imagerecognitionapp.ui.camera
 
 import android.content.pm.PackageManager
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -34,7 +35,9 @@ import com.example.imagerecognitionapp.ui.common.MenuToolbar
 import com.example.imagerecognitionapp.ui.dialog.FragmentAlertDialog
 import com.example.imagerecognitionapp.ui.recognition.RecognitionViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -47,6 +50,7 @@ class FragmentCamera : Fragment() {
 
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var cameraRepository: CameraRepository
+    private var isCleaningUp = false
     private var camera: Camera? = null
     private var isImageCaptured = false
     private val viewModel: RecognitionViewModel by viewModels()
@@ -151,8 +155,25 @@ class FragmentCamera : Fragment() {
 
     //Pasar de fragment en fragment
     private fun navigateToRecognitionFragment() {
+        if (isCleaningUp) return // Evitar múltiples llamadas
+        isCleaningUp = true
         CloseMenuFlotant()
-        findNavController().navigate(R.id.action_fragmentCamera_to_recognitionFragment)
+        lifecycleScope.launch {
+            try {
+                // 1. Liberar recursos de la cámara primero
+                cleanupResources()
+
+                // 2. Esperar un frame para asegurar la liberación
+                withContext(Dispatchers.Main) {
+                    // 3. Navegar después de limpiar
+                    findNavController().navigate(R.id.action_fragmentCamera_to_recognitionFragment)
+                }
+            } catch (e: Exception) {
+                Log.e("Navigation", "Error navigating", e)
+            } finally {
+                isCleaningUp = false
+            }
+        }
     }
 
 
@@ -280,7 +301,70 @@ class FragmentCamera : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         CloseMenuFlotant()
-        cameraExecutor.shutdown()
+        cleanupResources()
+        //cameraExecutor.shutdown()
         _binding = null
     }
+
+    private fun cleanupResources() {
+        try {
+            // 1. Liberar recursos de CameraRepository
+            // 2. Liberar recursos de CameraRepository (sin shutdown)
+            if (::cameraRepository.isInitialized) {
+                // Alternativa para Meerkat 24.3.1
+                try {
+                    // Usamos reflexión como último recurso para acceder a campos internos
+                    val providerField = cameraRepository::class.java.getDeclaredField("cameraProvider")
+                    providerField.isAccessible = true
+                    val provider = providerField.get(cameraRepository) as? ProcessCameraProvider
+                    provider?.unbindAll()
+                    Log.d("Camera", "CameraProvider liberado")
+
+                    val imageCaptureField = cameraRepository::class.java.getDeclaredField("imageCapture")
+                    imageCaptureField.isAccessible = true
+                    imageCaptureField.set(cameraRepository, null)
+                    Log.d("Camera", "ImageCapture liberado")
+                } catch (e: NoSuchFieldException) {
+                    Log.e("Camera", "Campo no encontrado en CameraRepository", e)
+                } catch (e: IllegalAccessException) {
+                    Log.e("Camera", "Acceso ilegal al campo", e)
+                }
+            }
+
+
+            // 2. Detener y liberar el ExecutorService
+            if (::cameraExecutor.isInitialized) {
+                cameraExecutor.shutdownNow()
+                Log.d("Camera", "CameraExecutor shut down")
+            }
+
+            // 3. Liberar recursos de la vista previa de la cámara
+            //binding.cameraPreview.surfaceProvider = null
+            binding.cameraPreview.controller = null
+
+
+            // 4. Liberar recursos de la imagen de vista previa
+            binding.imagePreview.setImageURI(null)
+            (binding.imagePreview.drawable as? BitmapDrawable)?.bitmap?.recycle()
+
+            // 5. Liberar animaciones Lottie si existen
+            if (::lottieAnimation.isInitialized) {
+                lottieAnimation.cancelAnimation()
+                lottieAnimation.setImageDrawable(null)
+            }
+
+            // 6. Liberar binding
+            _binding = null
+
+            // 7. Resetear estado
+            isImageCaptured = false
+            camera = null
+
+            Log.d("Camera", "All resources cleaned up")
+        } catch (e: Exception) {
+            Log.e("Camera", "Error during cleanup", e)
+        }
+    }
+
+
 }

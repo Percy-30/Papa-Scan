@@ -46,7 +46,7 @@ class ImageRecognitionRepository @Inject constructor(
     suspend fun getRecognitionResult(bitmap: Bitmap): RecognitionResult {
         return withContext(Dispatchers.IO) {
             try {
-                val scaledBitmap = scaleBitmap(bitmap, 250, 250)
+                val scaledBitmap = scaleBitmap(bitmap, 256 , 256) // Cambia a 512 - 250
                 Log.d("ImageRecognitionRepository", "Imagen escalada: ${scaledBitmap.width}x${scaledBitmap.height}")
 
                 // Ejecutar inferencia

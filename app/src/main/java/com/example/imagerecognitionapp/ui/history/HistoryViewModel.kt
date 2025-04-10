@@ -107,6 +107,15 @@ class HistoryViewModel @Inject constructor(private val historyRepository: Histor
         }
     }
 
+    fun clearAllHistory() {
+        viewModelScope.launch {
+            historyRepository.clearAllHistory()
+            // Opcional: Mostrar mensaje o actualizar UI
+            loadHistory()
+            //_toastMessage.postValue("Historial vaciado")
+        }
+    }
+
     // En el ViewModel
     fun removeFromHistoryById(id: Int) {
         // Aquí va la lógica para eliminar el historial por id, por ejemplo, llamando al repositorio o a la base de datos

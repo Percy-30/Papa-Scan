@@ -46,7 +46,10 @@ import com.example.imagerecognitionapp.ui.result.SharedViewModel
 import com.example.imagerecognitionapp.utils.TensorFlowHelper
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.muddz.styleabletoast.StyleableToast
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -84,12 +87,19 @@ class RecognitionFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentRecognitionBinding.inflate(inflater, container, false)
+        // Estado inicial del botón
+        binding.btnProcessImage.isEnabled = false
+        binding.btnProcessImage.alpha = 0.5f
         return binding.root
     }
+    private val job = Job()
+    private lateinit var viewModelScope: CoroutineScope
+    private val customScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     //Princiapal Funciones
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModelScope = customScope
         tensorFlowHelper = TensorFlowHelper(requireContext())
         startMenu()
         setupCameraRepository()
@@ -97,7 +107,10 @@ class RecognitionFragment : Fragment() {
         setupClickListenersCameraGalery()
         observeNavigationResult()
         //ProcesarImagen()
+
         BotonProcesar()
+
+
         // Agrega el código aquí
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
@@ -121,6 +134,7 @@ class RecognitionFragment : Fragment() {
             CameraRepository.CAMERA_PERMISSION_REQUEST_CODE
         )
     }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -130,10 +144,11 @@ class RecognitionFragment : Fragment() {
         if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permiso concedido, actualizar LiveData
-                 viewModel.updateCameraPermissionStatus(true)
+                viewModel.updateCameraPermissionStatus(true)
             } else {
                 // Permiso denegado, actualizar LiveData
                 viewModel.updateCameraPermissionStatus(false)
+                showToastError("Se requiere permiso de cámara para esta función")
             }
         }
     }
@@ -250,12 +265,21 @@ class RecognitionFragment : Fragment() {
         binding.icPhotoAlternative.visibility = View.GONE
         binding.icAddAPhoto.visibility = View.GONE
     }
+    private fun checkPermissionAndExecute(action: () -> Unit) {
+        if (!cameraRepository.isCameraPermissionGranted()) {
+            requestCameraPermission()
+        } else {
+            action()
+        }
+    }
 
     private fun setupMenuFlotant() {
        with(binding){
             iccAdd.setOnClickListener { viewModel.btnAddMenu() }
+
             icPhotoAlternative.setOnClickListener {
                 if (!cameraRepository.isCameraPermissionGranted()) {
+                    viewModel.setOpenCameraAfterPermission(true)
                     requestCameraPermission()
                 } else {
                     viewModel.btnUploadImage()
@@ -282,11 +306,13 @@ class RecognitionFragment : Fragment() {
                    //cargeImage = false
                }else{
                    if(!cameraRepository.isCameraPermissionGranted()){
+                       viewModel.setOpenCameraAfterPermission(true)
                        requestCameraPermission()
                    }else{
-                       viewModel.btnOpenCamera()
-                       showToast("Tomar foto")
                        navigateToCameraFragment()
+                       /*viewModel.btnOpenCamera()
+                       showToast("Tomar foto")
+                       navigateToCameraFragment()*/
                    }
                }
 
@@ -294,6 +320,8 @@ class RecognitionFragment : Fragment() {
 
         }
     }
+
+
 
     private fun setupObservers() {
         var isFirstObservation = true // Variable para evitar la animación inicial
@@ -318,6 +346,18 @@ class RecognitionFragment : Fragment() {
                 showToastError("Debe cargar la imagen para procesar")
             }
         }
+    }
+
+    // Nueva función para manejar cambios en la imagen
+    private fun handleImageState(hasImage: Boolean) {
+        cargeImage = hasImage
+        binding.btnProcessImage.isEnabled = hasImage
+        binding.btnProcessImage.alpha = if (hasImage) 1.0f else 0.5f
+
+        // También puedes cambiar el color de fondo si lo deseas
+        // binding.btnProcessImage.setBackgroundColor(
+        //     ContextCompat.getColor(requireContext(),
+        //     if (hasImage) R.color.colorPrimary else R.color.gray)
     }
 
     private fun ProcesarImagen() {
@@ -437,7 +477,8 @@ class RecognitionFragment : Fragment() {
                 // Mostrar la imagen capturada
                 binding.imgPhotoPreview.setImageURI(Uri.parse(it))
                 binding.imgPhotoPreview.visibility = View.VISIBLE
-                cargeImage = true
+                handleImageState(true) // <-- Aquí actualizamos el estado
+                //cargeImage = true
                 //Toast.makeText(requireContext(), "Imagen cargada de la camara", Toast.LENGTH_SHORT).show()
                 showToastCorrect("Imagen cargada con éxito")
                 // Limpiar el savedStateHandle para evitar mostrar la misma imagen múltiples veces
@@ -526,7 +567,8 @@ class RecognitionFragment : Fragment() {
                 setImageURI(it)
                 visibility = View.VISIBLE
                 CloseMenuFlotant()
-                cargeImage = true
+                //cargeImage = true
+                handleImageState(true) // <-- Aquí actualizamos el estado
             }
             showToastCorrect("Imagen cargada con éxito")
         } ?: showToastError("No se pudo cargar la imagen")
@@ -540,10 +582,12 @@ class RecognitionFragment : Fragment() {
                 // Cargar la imagen con escalado antes de asignarla al ImageView
                 loadImageEfficiently(it)
                 CloseMenuFlotant()
-                cargeImage = true
+                //cargeImage = true
+                handleImageState(true) // <-- Aquí actualizamos el estad
                 showToastCorrect("Imagen cargada con éxito")
                 //Toast.makeText(requireContext(), "Imagen cargada con éxito", Toast.LENGTH_SHORT).show()
             } ?: run {
+                handleImageState(false) // <-- Aquí actualizamos el estad
                 //Toast.makeText(requireContext(), "No se pudo cargar la imagen", Toast.LENGTH_SHORT).show()
                 showToastError("No se pudo cargar la imagen")
             }
@@ -589,14 +633,55 @@ class RecognitionFragment : Fragment() {
     }
 
 
+
     override fun onDestroyView() {
-        super.onDestroyView()
-        CloseMenuFlotant()
+        // 1. Cancelar corrutinas
+        job.cancel()
+
+        // 2. Liberar recursos de TensorFlow
+        try {
+            if (::tensorFlowHelper.isInitialized) {
+                tensorFlowHelper.close()
+            }
+        } catch (e: Exception) {
+            Log.e("RecognitionFragment", "Error releasing TensorFlow", e)
+        }
+
+        // 3. Limpiar imágenes
+       // clearImageResources()
+
+        // 4. Liberar observers
+        //clearObservers()
+
+        // 5. Limpiar archivos temporales
+        //clearTempFiles()
+
+        // 6. Liberar binding (siempre al final)
         _binding = null
-        if (::tensorFlowHelper.isInitialized) {
-            tensorFlowHelper.close()  // Llamar a close() solo si tensorflowHelper está inicializado
-        } else {
-            Log.w("RecognitionFragment", "TensorFlowHelper no inicializado.")
+
+        super.onDestroyView()
+    }
+
+    private fun clearImageResources() {
+        binding.imgPhotoPreview.setImageDrawable(null)
+        Glide.with(this).clear(binding.imgPhotoPreview)
+    }
+
+    private fun clearObservers() {
+        viewModel.isFabMenuOpen.removeObservers(viewLifecycleOwner)
+        viewModel.loading.removeObservers(viewLifecycleOwner)
+        findNavController().currentBackStackEntry?.savedStateHandle?.remove<String>("image_uri")
+    }
+
+    private fun clearTempFiles() {
+        try {
+            requireContext().cacheDir.listFiles()?.forEach { file ->
+                if (file.name.startsWith("image") && file.name.endsWith(".jpg")) {
+                    file.delete()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("RecognitionFragment", "Error clearing temp files", e)
         }
     }
 

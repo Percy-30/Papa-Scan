@@ -80,6 +80,10 @@ class HistoryRepository @Inject constructor(private val historyDb: HistoryDb) {
         historyDb.HistoryDao().deleteHistory(history)
     }
 
+    suspend fun clearAllHistory(){
+        historyDb.HistoryDao().deleteAll()
+    }
+
     suspend fun removeHistoryById(id: Int) {
         historyDb.HistoryDao().deleteHistoryById(id)
     }
