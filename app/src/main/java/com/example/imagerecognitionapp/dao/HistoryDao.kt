@@ -50,7 +50,7 @@ interface HistoryDao {
 
     //@Query("SELECT * FROM History WHERE diseaseName = :diseaseName AND section = :section")
     // suspend fun getHistoryByDiseaseAndSection(diseaseName: String, section: String): History?
-    @Query("SELECT * FROM History WHERE diseaseName = :diseaseName AND section = 'main'")
+    @Query("SELECT * FROM History WHERE diseaseName = :diseaseName AND section = 'papascan'")
     suspend fun getHistoryByDiseaseAndSection(diseaseName: String): History?
 
    //@Query("SELECT * FROM history WHERE diseaseName = :diseaseName")

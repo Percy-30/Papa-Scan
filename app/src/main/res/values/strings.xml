@@ -28,5 +28,12 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="showInfo">Ver enfermedad</string>
     <string name="clear_history">Limpiar Historial</string>
+    <string name="delete_history">Eliminar</string>
+
+    <!-- TODO: Para salir del app -->
+    <string name="exit_app_title">Salir de la aplicación</string>
+    <string name="exit_app_message">¿Estás seguro que deseas salir de la aplicación?</string>
+    <string name="exit">Salir</string>
+    <string name="cancel">Cancelar</string>
 
 </resources>

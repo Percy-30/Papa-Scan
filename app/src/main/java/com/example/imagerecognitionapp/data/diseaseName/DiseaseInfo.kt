@@ -34,7 +34,7 @@ data class DiseaseInfo(
         name = " Papa_Saludable",
         description = ": La planta de papa se encuentra en un estado saludable y sin síntomas de enfermedad.",
         prevention = "Mantener prácticas agrícolas saludables, como la rotación de cultivos y el control de plagas.",
-        causes = "Causas Healthy,  No aplica",
+        causes = "Causas papa Saludable,  No aplica",
         treatment = "Tratamineto No aplica."
     ),
     "Rancha" to DiseaseInfo(//Late_Blight //Rancha

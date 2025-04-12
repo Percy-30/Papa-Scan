@@ -26,9 +26,12 @@ import com.example.imagerecognitionapp.data.historyItem.HistoryItem
 import com.example.imagerecognitionapp.data.model.History
 import com.example.imagerecognitionapp.databinding.FragmentHistoryBinding
 import com.example.imagerecognitionapp.ui.common.MenuToolbar
+import com.example.imagerecognitionapp.ui.dialog.FragmentAlertDialogExit
 import com.example.imagerecognitionapp.ui.history.HistoryViewModel
 import com.example.imagerecognitionapp.ui.result.SharedViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import io.github.muddz.styleabletoast.StyleableToast
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 
 
@@ -79,6 +82,10 @@ class HistoryFragment : Fragment() {
         }
     }
 
+    private fun showToastCorrect(message: String){
+        StyleableToast.makeText(requireContext(), message, R.style.exampleToastCorrect).show()
+    }
+
     private fun showClearHistoryDialog(lottieAnimation: LottieAnimationView) {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Vaciar historial")
@@ -102,11 +109,7 @@ class HistoryFragment : Fragment() {
                                 binding.recyclerViewHistory.visibility = View.GONE
                                 binding.noHistoryTextView.visibility = View.VISIBLE
                                 // Mostrar confirmación
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Historial vaciado",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                showToastCorrect("Historial vaciado")
                             } catch (e: Exception) {
                                 Log.e("HistoryFragment", "Error al vaciar historial", e)
                                 Toast.makeText(
@@ -248,7 +251,7 @@ class HistoryFragment : Fragment() {
             context = requireContext(),
             onHistoryClick = { /* Ya estamos en History */ },
             onAboutClick = { navigateToAlertDialog() },
-            onExitClick = { requireActivity().finish() }
+            onExitClick = { showExitConfirmationDialog() }
         )
 
         (requireActivity() as AppCompatActivity).apply {
@@ -260,6 +263,23 @@ class HistoryFragment : Fragment() {
         }
         setHasOptionsMenu(true)
     }
+
+    private fun showExitConfirmationDialog() {
+        FragmentAlertDialogExit.newInstance(
+            title = getString(R.string.exit_app_title),
+            message = getString(R.string.exit_app_message),
+            positiveText = getString(R.string.exit),
+            negativeText = getString(R.string.cancel),
+            onPositive = {
+                cleanupResources()
+                requireActivity().finishAffinity()
+            },
+            onNegative = {
+                // No hacer nada o puedes agregar lógica adicional
+            }
+        ).show(parentFragmentManager, "ExitDialog")
+    }
+
 
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -293,8 +313,42 @@ class HistoryFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        cleanupResources()
         super.onDestroyView()
         //sharedViewModel.clearSelectedHistory()
-        _binding = null
+    }
+
+    private fun cleanupResources() {
+        try {
+            // 1. Limpiar el adaptador del RecyclerView
+            binding.recyclerViewHistory.adapter = null
+
+            // 2. Cancelar corrutinas pendientes
+            lifecycleScope.launch {
+                coroutineContext.cancelChildren()
+            }
+
+            // 3. Limpiar selección en el ViewModel compartido
+            sharedViewModel.clearSelectedHistory()
+
+            // 4. Detener y limpiar animaciones Lottie
+            binding.btnDeleteallhistorylottieAnimationView.apply {
+                cancelAnimation()
+                setImageDrawable(null)
+            }
+
+            // 5. Remover listeners
+            binding.btndeleteallhistory.setOnClickListener(null)
+
+            // 6. Limpiar Glide (si estás usando imágenes)
+            Glide.with(this).clear(binding.root)
+
+            // 7. Liberar binding
+            _binding = null
+
+            Log.d("HistoryFragment", "All resources cleaned up")
+        } catch (e: Exception) {
+            Log.e("HistoryFragment", "Error during cleanup", e)
+        }
     }
 }

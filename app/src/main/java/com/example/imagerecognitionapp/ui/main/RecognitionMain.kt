@@ -18,12 +18,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.airbnb.lottie.LottieAnimationView
@@ -32,30 +33,54 @@ import com.example.imagerecognitionapp.data.repository.CameraRepository
 import com.example.imagerecognitionapp.databinding.ActivityMainBinding
 import com.example.imagerecognitionapp.databinding.FragmentRecognitionMainBinding
 import com.example.imagerecognitionapp.ui.common.MenuToolbar
-import com.example.imagerecognitionapp.ui.recognition.RecognitionViewModel
+import com.example.imagerecognitionapp.ui.dialog.FragmentAlertDialogExit
 import com.example.imagerecognitionapp.utils.TensorFlowHelper
-import dagger.hilt.android.AndroidEntryPoint
 import io.github.muddz.styleabletoast.StyleableToast
+import kotlinx.coroutines.launch
 
-@AndroidEntryPoint
 class RecognitionMain : Fragment() {
 
-    private var _binding: FragmentRecognitionMainBinding? = null
-    // This property is only valid between onCreateView and onDestroyView
-    private val binding get() = _binding!!
+    private lateinit var binding: FragmentRecognitionMainBinding
+    private lateinit var menuHandler: MenuToolbar
+    //private val model: MainViewModel by activityViewModels()
 
+    lateinit var buttonWithAnimation: ConstraintLayout
+    lateinit var lottieAnimationView: LottieAnimationView
+    lateinit var buttonText: TextView
 
-    private lateinit var cameraRepository: CameraRepository
-    private val viewModel: RecognitionViewModel by viewModels()
+    // private lateinit var viewModel: RecognitionViewModel
     lateinit var tensorFlowHelper: TensorFlowHelper
 
-    // Flag to track if we should check permissions in onResume
-    private var checkPermissionsOnResume = false
+    // Camera repository
+    private lateinit var cameraRepository: CameraRepository
+
+    // Registrar el lanzador para solicitar permisos usando la API de ActivityResult
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permiso concedido, navegar al fragmento de reconocimiento
+            Log.d("RecognitionMain", "Permiso de cámara concedido")
+            navigateToRecognitionFragment()
+        } else {
+            // Permiso denegado
+            if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+                // Mostrar explicación de por qué necesitamos el permiso
+                showPermissionRationaleDialog()
+            } else {
+                // El usuario marcó "No volver a preguntar", mostrar diálogo para ir a configuración
+                showGoToSettingsDialog()
+            }
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
         }
+        // Initialize camera repository
+        cameraRepository = CameraRepository(requireActivity())
     }
 
     override fun onCreateView(
@@ -63,109 +88,130 @@ class RecognitionMain : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentRecognitionMainBinding.inflate(inflater, container, false)
+        binding = FragmentRecognitionMainBinding.inflate(inflater, container, false)
         return binding.root
         //return inflater.inflate(R.layout.fragment_recognition_main, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // TODO: Use the View object to perform additional initialization
-        setupCameraRepository()
-        initViews()
+        setupMainButtons()
+    }
 
-        // Observe camera permission changes
-        viewModel.isCameraPermissionGranted.observe(viewLifecycleOwner) { isGranted ->
-            if (isGranted) {
-                navigateToRecognitionFragment()
-            }
+    override fun onResume() {
+        super.onResume()
+        // Verificar permisos cada vez que el fragmento se reanuda
+        // para el caso cuando el usuario regresa de la configuración
+        if (cameraRepository.isCameraPermissionGranted()) {
+            // Actualizar la UI si el permiso ya fue concedido
+            Log.d("RecognitionMain", "Permiso de cámara ya concedido")
+            binding.btnDetectPatofoli.isEnabled = true
         }
     }
-
-    private fun setupCameraRepository() {
-        cameraRepository = CameraRepository(requireActivity())
-    }
-
-    private fun initViews() {
-        with(binding) {
-            btnDetectPatofoli.setOnClickListener { startApp() }
-            btnAbout.setOnClickListener { infoApp() }
-            btnExit.setOnClickListener { exitApp() }
+    private fun setupMainButtons() {
+        // Botón para iniciar la detección - verifica permisos primero
+        binding.btnDetectPatofoli.setOnClickListener {
+            checkCameraPermission()
         }
-    }
-
-    private fun startApp() {
-        checkCameraPermission()
-    }
-
-    private fun checkCameraPermission() {
-        when {
-            cameraRepository.isCameraPermissionGranted() -> navigateToRecognitionFragment()
-            cameraRepository.isCameraPermissionPermanentlyDenied() -> showGoToSettingsDialog()
-            else -> requestCameraPermission()
-        }
-    }
-    private fun navigateToRecognitionFragment() {
-        findNavController().navigate(R.id.recognitionFragment)
-    }
-
-
-    private fun requestCameraPermission() {
-        cameraRepository.markPermissionAsRequested() // Marca que ya lo pedimos al menos una vez
-        ActivityCompat.requestPermissions(
-            requireActivity(),
-            arrayOf(Manifest.permission.CAMERA),
-            CameraRepository.CAMERA_PERMISSION_REQUEST_CODE
-        )
+        // Configurar otros botones
+        infoApp()
+        exitApp()
     }
 
     private fun showToastError(message: String){
         StyleableToast.makeText(requireContext(), message, R.style.exampleToastError).show()
     }
 
+    private fun   showToastWarning(message: String){
+        StyleableToast.makeText(requireContext(), message, R.style.exampleToastProcessImage).show()
+    }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
-            val isGranted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
-
-            viewModel.updateCameraPermissionStatus(isGranted)
-
-            if (!isGranted) {
-                if (!shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-                    showGoToSettingsDialog()
-                } else {
-                    showToastError("Se requiere permiso de cámara para esta función")
-                }
+    private fun checkCameraPermission() {
+        when {
+            cameraRepository.isCameraPermissionGranted() -> {
+                // Permiso ya concedido, navegar al fragmento de reconocimiento
+                navigateToRecognitionFragment()
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> {
+                // Mostrar explicación de por qué necesitamos el permiso
+                showPermissionRationaleDialog()
+            }
+            else -> {
+                // Solicitar permiso de cámara
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
             }
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        // Check if permissions were potentially modified while the app was in background
-        if (checkPermissionsOnResume) {
-            checkPermissionsOnResume = false
-            checkPermissionStatusAfterSettingsReturn()
-        }
+    private fun navigateToRecognitionFragment() {
+        findNavController().navigate(R.id.recognitionFragment)
     }
 
-    private fun checkPermissionStatusAfterSettingsReturn() {
-        if (cameraRepository.isCameraPermissionGranted()) {
-            // Permission was granted in settings
-            viewModel.updateCameraPermissionStatus(true)
-            navigateToRecognitionFragment()
-        } else if (cameraRepository.isCameraPermissionPermanentlyDenied()) {
-            // User still denied permission in settings
-            showToastError("El permiso aún no ha sido concedido.")
-            //showToastError(getString(R.string.camera_permission_still_denied))
-        }
+    private fun showPermissionRationaleDialog() {
+        FragmentAlertDialogExit.newInstance(
+            title = "Permiso de cámara necesario",
+            message = "Esta aplicación necesita acceso a la cámara para detectar y analizar imágenes. Por favor, concede el permiso para continuar.",
+            positiveText = "Conceder",
+            negativeText = "Cancelar",
+            onPositive = {
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+            },
+            onNegative = {
+                showToastWarning("El acceso a la cámara es necesario para usar esta función")
+            }
+        ).show(parentFragmentManager, "CameraPermissionDialog")
     }
+
+    private fun showGoToSettingsDialog() {
+        FragmentAlertDialogExit.newInstance(
+            title = "Permiso de cámara requerido",
+            message = "Parece que denegaste el permiso de cámara. Para usar esta función, ve a Ajustes > Aplicaciones > PapaScan > Permisos y habilítalo.",
+            positiveText = "Ir a Ajustes",
+            negativeText = "Cancelar",
+            onPositive = {
+                val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", requireContext().packageName, null)
+                }
+                startActivity(intent)
+            },
+            onNegative = {
+                showToastError("El acceso a la cámara es necesario para usar esta función")
+            }
+        ).show(parentFragmentManager, "GoToSettingsDialog")
+    }
+
+
+
+    /*private fun showPermissionRationaleDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Permiso de cámara necesario")
+            .setMessage("Esta aplicación necesita acceso a la cámara para detectar y analizar imágenes. Por favor, concede el permiso para continuar.")
+            .setPositiveButton("Conceder") { _, _ ->
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+                showToastWarning("El acceso a la cámara es necesario para usar esta función",)
+            }
+            .show()
+    }*/
+
+    /*private fun showGoToSettingsDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Permiso de cámara requerido")
+            .setMessage("Parece que denegaste el permiso de cámara. Para usar esta función, ve a Ajustes > Aplicaciones > PapaScan > Permisos y habilítalo.")
+            .setPositiveButton("Ir a Ajustes") { _, _ ->
+                val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", requireContext().packageName, null)
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton("Cancelar"){ dialog, _ ->
+                dialog.dismiss()
+                showToastError("El acceso a la cámara es necesario para usar esta función",)
+            }
+            .show()
+    }*/
 
 
     private fun infoApp(){
@@ -180,35 +226,16 @@ class RecognitionMain : Fragment() {
         }
     }
 
-    private fun showGoToSettingsDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Permiso de cámara requerido")
-            .setMessage("Parece que denegaste el permiso de cámara. Para usar esta función, ve a Ajustes > Aplicaciones > PapaScan > Permisos y habilítalo.")
-            .setPositiveButton("Ir a Ajustes") { _, _ ->
-                // Set flag to check permissions when we return from settings
-                checkPermissionsOnResume = true
-                val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.fromParts("package", requireContext().packageName, null)
-                }
-                startActivity(intent)
-            }
-                .setNegativeButton("Cancelar", null)
-                .show()
-    }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
+        binding.unbind()
         if (::tensorFlowHelper.isInitialized) {
-            tensorFlowHelper.close()
+            tensorFlowHelper.close()  // Llamar a close() solo si tensorflowHelper está inicializado
+        } else {
+            Log.w("RecognitionFragment", "TensorFlowHelper no inicializado.")
         }
-        _binding = null // Prevent memory leaks
-    //binding = null <- Esto sería si usaras `var binding` en lugar de `lateinit val`
     }
 
-    companion object {
-        //private const val REQUEST_IMAGE_SELECT_CODE = 1002
-        private const val CAMERA_PERMISSION_REQUEST_CODE = 1001
-    }
 
 }

@@ -1,6 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
+        gradlePluginPortal()  // Gradle Plugin Portal
         google()
         mavenCentral()  // Agrega mavenCentral() si no está incluido
         maven {

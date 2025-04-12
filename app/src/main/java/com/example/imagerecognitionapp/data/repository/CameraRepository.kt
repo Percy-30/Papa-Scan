@@ -28,7 +28,6 @@ class CameraRepository(private val activity: FragmentActivity) {
     companion object {
         private const val TAG = "CameraRepository"
         const val CAMERA_PERMISSION_REQUEST_CODE = 1001
-        private val PREF_PERMISSION_REQUESTED = "camera_permission_requested"
     }
 
     private var imageCapture: ImageCapture? = null
@@ -42,30 +41,9 @@ class CameraRepository(private val activity: FragmentActivity) {
     sealed class CameraState {
         object Idle : CameraState()
         object Preview : CameraState()
-        //data class Error(val message: String) : CameraState()
-        data class Error(val message: String, val recoverable: Boolean = true) : CameraState()
+        data class Error(val message: String) : CameraState()
         data class ImageCaptured(val uri: Uri) : CameraState()
         data class ImageSaved(val uri: Uri) : CameraState()
-    }
-    // En CameraRepository.kt
-
-    fun hasPermissionBeenRequested(): Boolean {
-        val sharedPrefs = activity.getSharedPreferences("app_prefs", Activity.MODE_PRIVATE)
-        return sharedPrefs.getBoolean(PREF_PERMISSION_REQUESTED, false)
-    }
-
-    fun isCameraPermissionPermanentlyDenied(): Boolean {
-       return !isCameraPermissionGranted() &&
-               !ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.CAMERA) &&
-               hasPermissionBeenRequested()
-   }
-    fun markPermissionAsRequested() {
-        val sharedPrefs = activity.getSharedPreferences("app_prefs", Activity.MODE_PRIVATE)
-        sharedPrefs.edit().putBoolean(PREF_PERMISSION_REQUESTED, true).apply()
-    }
-
-    private fun shouldShowPermissionRationale(): Boolean {
-        return activity.shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
     }
 
     fun isCameraPermissionGranted(): Boolean =

@@ -25,10 +25,12 @@ import com.example.imagerecognitionapp.R
 import com.example.imagerecognitionapp.data.model.RecognitionResult
 import com.example.imagerecognitionapp.databinding.FragmentResultBinding
 import com.example.imagerecognitionapp.ui.common.MenuToolbar
+import com.example.imagerecognitionapp.ui.dialog.FragmentAlertDialogExit
 import com.example.imagerecognitionapp.ui.diseaseInfo.DiseaseInfoFragment
 import com.example.imagerecognitionapp.ui.recognition.RecognitionViewModel
 import com.squareup.picasso.Picasso
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.muddz.styleabletoast.StyleableToast
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
@@ -200,7 +202,8 @@ class ResultFragment : Fragment() {
             context = requireContext(),
             onHistoryClick = { navigateToHistoryFragment() },
             onAboutClick = { navigateToAlertDialog() },
-            onExitClick = { requireActivity().finish() }
+            onExitClick = { showExitConfirmationDialog() }
+            //onExitClick = { requireActivity().finish() }
         )
 
         // Configurar la Toolbar
@@ -214,6 +217,23 @@ class ResultFragment : Fragment() {
         setHasOptionsMenu(true)
     }
 
+    private fun showExitConfirmationDialog() {
+        FragmentAlertDialogExit.newInstance(
+            title = getString(R.string.exit_app_title),
+            message = getString(R.string.exit_app_message),
+            positiveText = getString(R.string.exit),
+            negativeText = getString(R.string.cancel),
+            onPositive = {
+                cleanupResources()
+                requireActivity().finishAffinity()
+            },
+            onNegative = {
+                // No hacer nada o puedes agregar lógica adicional
+            }
+        ).show(parentFragmentManager, "ExitDialog")
+    }
+
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menuHandler.onCreateOptionsMenu(menu, inflater)
         return super.onCreateOptionsMenu(menu, inflater)
@@ -224,6 +244,7 @@ class ResultFragment : Fragment() {
         // Todo lo demás se delega al menuHandler
         return when (item.itemId) {
             android.R.id.home -> {
+                showToastProccessImagevalidation("No se guardo en el historial")
                 navigateToRecognitionFragment()
                 true
             }
@@ -257,8 +278,67 @@ class ResultFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        cleanupResources()
         super.onDestroyView()
-        _binding = null
+    }
+
+    private fun   showToastProccessImagevalidation(message: String){
+        StyleableToast.makeText(requireContext(), message, R.style.exampleToastProcessImage).show()
+    }
+
+    private fun cleanupResources() {
+        try {
+            // 1. Limpiar recursos de imágenes
+            clearImageResources()
+
+            // 2. Limpiar ViewModel compartido
+            sharedViewModel.reset()
+
+            // 3. Remover observadores
+            clearObservers()
+
+            // 4. Limpiar referencias de menú
+            menuHandler.let {
+                // Si MenuToolbar tiene algún recurso que limpiar
+            }
+
+            // 5. Liberar binding (siempre al final)
+            _binding = null
+
+            Log.d("ResultFragment", "All resources cleaned up successfully")
+        } catch (e: Exception) {
+            Log.e("ResultFragment", "Error during cleanup", e)
+        }
+    }
+
+    private fun clearImageResources() {
+        try {
+            // Limpiar ImageView
+            binding.imageViewResult.setImageDrawable(null)
+
+            // Limpiar Glide (si se usó)
+            Glide.with(this).clear(binding.imageViewResult)
+
+            // Limpiar Picasso (si se usó)
+            Picasso.get().cancelRequest(binding.imageViewResult)
+
+            // Liberar bitmap si existe
+            if (::bitmap.isInitialized) {
+                bitmap.recycle()
+            }
+        } catch (e: Exception) {
+            Log.e("ResultFragment", "Error clearing image resources", e)
+        }
+    }
+
+    private fun clearObservers() {
+        try {
+            // Remover observadores del ViewModel compartido
+            sharedViewModel.compressedImage?.removeObservers(viewLifecycleOwner)
+            viewModel.errorMessage.removeObservers(viewLifecycleOwner)
+        } catch (e: Exception) {
+            Log.e("ResultFragment", "Error clearing observers", e)
+        }
     }
 
 }

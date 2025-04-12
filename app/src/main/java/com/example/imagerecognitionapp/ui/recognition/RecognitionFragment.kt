@@ -30,10 +30,12 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.airbnb.lottie.LottieComposition
+import com.airbnb.lottie.LottieCompositionFactory
+import com.airbnb.lottie.LottieDrawable
+import com.airbnb.lottie.LottieListener
 import com.bumptech.glide.Glide
 import com.example.imagerecognitionapp.R
 import com.example.imagerecognitionapp.data.model.RecognitionResult
@@ -42,6 +44,7 @@ import com.example.imagerecognitionapp.data.repository.ImageRecognitionException
 import com.example.imagerecognitionapp.data.repository.ImageRecognitionRepository
 import com.example.imagerecognitionapp.databinding.FragmentRecognitionBinding
 import com.example.imagerecognitionapp.ui.common.MenuToolbar
+import com.example.imagerecognitionapp.ui.dialog.FragmentAlertDialogExit
 import com.example.imagerecognitionapp.ui.result.SharedViewModel
 import com.example.imagerecognitionapp.utils.TensorFlowHelper
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,12 +53,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.OutputStream
 
 @AndroidEntryPoint
 class RecognitionFragment : Fragment() {
@@ -68,6 +71,9 @@ class RecognitionFragment : Fragment() {
     private lateinit var menuHandler: MenuToolbar
     private val viewModel: RecognitionViewModel by viewModels()
     private var cargeImage = false
+
+    private val animationPool = mutableListOf<LottieComposition>()
+    private var isAnimationsPreloaded = false
 
    // private lateinit var viewModel: RecognitionViewModel
    lateinit var tensorFlowHelper: TensorFlowHelper
@@ -110,11 +116,12 @@ class RecognitionFragment : Fragment() {
 
         BotonProcesar()
 
+        preloadAnimations()
 
         // Agrega el código aquí
-        viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+        /*viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-        }
+        }*/
 
         EnabledRetroceso()
     }
@@ -153,28 +160,13 @@ class RecognitionFragment : Fragment() {
         }
     }
 
-
-
-
-
-    // Inicializar Menu Toolbar
-   /* private fun setupToolbar(){
-        (activity as? AppCompatActivity)?.apply {
-            setSupportActionBar(binding.appBarMenu.toolbar) // Se usa la referencia correcta
-            supportActionBar?.title = "Reconocimiento"
-            supportActionBar?.setDisplayHomeAsUpEnabled(true) // Mostrar el botón de "atrás"
-        }
-        setHasOptionsMenu(true)
-    }*/
-
-
     //********MENU
     private fun startMenu() {
         menuHandler = MenuToolbar(
             context = requireContext(),
             onHistoryClick = { navigateToHistoryFragment() },
             onAboutClick = { navigateToAlertDialog() },
-            onExitClick = { requireActivity().finish() }
+            onExitClick = { showExitConfirmationDialog() }
         )
 
         // Configurar la Toolbar
@@ -186,6 +178,22 @@ class RecognitionFragment : Fragment() {
             }
         }
         setHasOptionsMenu(true)
+    }
+
+    private fun showExitConfirmationDialog() {
+        FragmentAlertDialogExit.newInstance(
+            title = getString(R.string.exit_app_title),
+            message = getString(R.string.exit_app_message),
+            positiveText = getString(R.string.exit),
+            negativeText = getString(R.string.cancel),
+            onPositive = {
+                cleanupResources()
+                requireActivity().finishAffinity()
+            },
+            onNegative = {
+                // No hacer nada o puedes agregar lógica adicional
+            }
+        ).show(parentFragmentManager, "ExitDialog")
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -300,7 +308,7 @@ class RecognitionFragment : Fragment() {
 
            imgPhotoPreview.setOnClickListener{
                if (cargeImage){
-                   showToastProccessImage("Ya se cargo la imagen ahora debe procesar.... O Tomar otra foto")
+                   showToastProccessImagevalidation("Ya se cargo la imagen ahora debe procesar.... O Tomar otra foto")
                    //CloseMenuFlotant()
                    //binding.imgPhotoPreview.setImageBitmap(null)
                    //cargeImage = false
@@ -309,6 +317,7 @@ class RecognitionFragment : Fragment() {
                        viewModel.setOpenCameraAfterPermission(true)
                        requestCameraPermission()
                    }else{
+                       showToast("Tomar foto")
                        navigateToCameraFragment()
                        /*viewModel.btnOpenCamera()
                        showToast("Tomar foto")
@@ -339,25 +348,139 @@ class RecognitionFragment : Fragment() {
 
     private fun BotonProcesar(){
         binding.btnProcessImage.setOnClickListener {
+            _binding ?: return@setOnClickListener
+
+            //showAnimationForFixedTime(5000) // 5 segundos
+            //showRandomAnimation()
             if (cargeImage) {
-                ProcesarImagen()
-            } else {
-               //Toast.makeText(requireContext(), "Debe abrir el menú para realizar la acción", Toast.LENGTH_SHORT).show()
-                showToastError("Debe cargar la imagen para procesar")
+                // Iniciar animación en bucle infinito
+                showRandomAnimation(loop = true) // <-- Ahora se repite
+                lifecycleScope.launch {
+                    delay(3000) // Espera 5 segundos
+                    try {
+                        ProcesarImagen()
+                    } catch (e: Exception) {
+                        Log.e("Process", "Error", e)
+                    }
+                }
             }
         }
     }
 
-    // Nueva función para manejar cambios en la imagen
-    private fun handleImageState(hasImage: Boolean) {
-        cargeImage = hasImage
-        binding.btnProcessImage.isEnabled = hasImage
-        binding.btnProcessImage.alpha = if (hasImage) 1.0f else 0.5f
+    // Lista de nombres de archivos en assets
+    private val animationFiles = listOf(
+        "animation_loading_1.json",
+        "animation_loading_2.json",
+        "animation_loading_3.json",
+        "animation_loading_4.json",
+        "animation_loading_5.json",
+        "animation_loading_6.json",
+        "animation_loading_7.json"
+    )
 
-        // También puedes cambiar el color de fondo si lo deseas
-        // binding.btnProcessImage.setBackgroundColor(
-        //     ContextCompat.getColor(requireContext(),
-        //     if (hasImage) R.color.colorPrimary else R.color.gray)
+    private fun preloadAnimations() {
+        if (isAnimationsPreloaded) return
+
+        animationFiles.forEach { fileName ->
+            try {
+                val inputStream = requireContext().assets.open(fileName)
+                LottieCompositionFactory.fromJsonInputStream(inputStream, fileName)
+                    .addListener(object : LottieListener<LottieComposition> {
+                        override fun onResult(composition: LottieComposition?) {
+                            composition?.let {
+                                animationPool.add(it)}
+                                inputStream.close()
+                        }
+
+                        fun onFailure(error: Throwable) {
+                            Log.e("Lottie", "Error cargando $fileName", error)
+                           inputStream.close()
+                        }
+                    })
+            } catch (e: IOException) {
+                Log.e("Lottie", "Error abriendo archivo $fileName", e)
+            }
+        }
+
+        isAnimationsPreloaded = true
+    }
+
+
+    private fun getRandomAnimation(callback: (LottieComposition?) -> Unit) {
+        if (animationPool.isNotEmpty()) {
+            callback(animationPool.random())
+        } else {
+            loadFallbackAnimationAsync(callback)
+        }
+    }
+
+    private fun loadFallbackAnimationAsync(callback: (LottieComposition?) -> Unit) {
+        try {
+            val inputStream = requireContext().assets.open("animation_loading_1.json")
+            LottieCompositionFactory.fromJsonInputStream(inputStream, "fallback")
+                .addListener(object : LottieListener<LottieComposition> {
+                    override fun onResult(composition: LottieComposition?) {
+                        callback(composition)
+                        inputStream.close()
+                    }
+
+                     fun onFailure(error: Throwable) {
+                        callback(null)
+                        inputStream.close()
+                        Log.e("Lottie", "Error fallback", error)
+                    }
+                })
+        } catch (e: IOException) {
+            callback(null)
+            Log.e("Lottie", "Error abriendo fallback", e)
+        }
+    }
+
+    private fun showRandomAnimation(loop: Boolean = false) {
+        getRandomAnimation { composition ->
+            _binding?.progressBarlottieAnimationView?.apply {
+                composition?.let {
+                    setComposition(it)
+                    repeatCount = if (loop) LottieDrawable.INFINITE else 0 // <- Loop infinito o no
+                    playAnimation()
+                    visibility = View.VISIBLE
+                } ?: run {
+                    visibility = View.GONE
+                    showToastError("Error cargando animación")
+                }
+            }
+        }
+    }
+
+    // Variable para controlar el estado
+    private var isProcessing = false
+
+    private fun handleImageState(hasImage: Boolean) {
+        val lottieAnimationView = binding.btnProcessImageslottieAnimationView
+
+        if (isProcessing) return // No cambiar estado si ya se está procesando
+
+        cargeImage = hasImage
+
+        if (hasImage) {
+                   // Animación de "esperando acción del usuario"
+            lottieAnimationView.apply {
+                //setAnimation(R.raw.waiting_animation) // Animación de espera
+                visibility = View.VISIBLE
+                speed = 1.0f
+                repeatCount = LottieDrawable.INFINITE
+                playAnimation()
+
+                binding.btnProcessImage.isEnabled = true
+                binding.btnProcessImage.alpha = 1.0f
+            }
+        } else {
+            lottieAnimationView.cancelAnimation()
+            lottieAnimationView.visibility = View.GONE
+            binding.btnProcessImage.isEnabled = false
+            binding.btnProcessImage.alpha = 0.5f
+
+        }
     }
 
     private fun ProcesarImagen() {
@@ -427,21 +550,6 @@ class RecognitionFragment : Fragment() {
             Log.e("ImageSave", "Error saving bitmap to file", e)
             null
         }
-    }
-
-    fun saveBitmapToFileUri(bitmap: Bitmap): Uri? {
-        val file = File.createTempFile("image", ".jpg", requireContext().cacheDir)
-        val outputStream: OutputStream
-        try {
-            outputStream = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-            outputStream.flush()
-            outputStream.close()
-            return Uri.fromFile(file)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return null
     }
 
 
@@ -541,7 +649,7 @@ class RecognitionFragment : Fragment() {
         StyleableToast.makeText(requireContext(), message, R.style.exampleToastError).show()
     }
 
-    private fun   showToastProccessImage(message: String){
+    private fun   showToastProccessImagevalidation(message: String){
         StyleableToast.makeText(requireContext(), message, R.style.exampleToastProcessImage).show()
     }
 
@@ -635,32 +743,68 @@ class RecognitionFragment : Fragment() {
 
 
     override fun onDestroyView() {
-        // 1. Cancelar corrutinas
-        job.cancel()
+        cleanupResources()
+        _binding = null
+        super.onDestroyView()
+    }
 
-        // 2. Liberar recursos de TensorFlow
+    private fun cleanupResources() {
         try {
+            // 1. Cancelar todas las corrutinas pendientes
+            job.cancel()
+            viewModelScope.coroutineContext.cancelChildren()
+
+            // 2. Liberar recursos de TensorFlow
             if (::tensorFlowHelper.isInitialized) {
                 tensorFlowHelper.close()
             }
+
+            // 3. Limpiar binding recursos si el binding aún existe
+            _binding?.let {
+                // Limpiar lottie animation
+                it.progressBarlottieAnimationView.apply {
+                    cancelAnimation()
+                }
+
+
+                // Liberar animaciones
+                it.iccAdd.clearAnimation()
+                it.icPhotoAlternative.clearAnimation()
+                it.icAddAPhoto.clearAnimation()
+
+                // Remover listeners de botones
+                it.iccAdd.setOnClickListener(null)
+                it.icPhotoAlternative.setOnClickListener(null)
+                it.icAddAPhoto.setOnClickListener(null)
+                it.btnProcessImage.setOnClickListener(null)
+
+                // Limpiar recursos de imágenes
+                it.imgPhotoPreview.setImageDrawable(null)
+                if (isAdded) {
+                    Glide.with(requireContext()).clear(it.imgPhotoPreview)
+                }
+            }
+
+
+            // 3. Limpiar recursos de imágenes
+            //clearImageResources()
+
+            // 4. Liberar listeners y observadores
+            clearObservers()
+
+            // 5. Limpiar archivos temporales
+            //clearTempFiles()
+
+
+            // 8. Limpiar ViewModel compartido
+            sharedViewModel.clearSelectedHistory()
+
+            Log.d("RecognitionFragment", "All resources cleaned up successfully")
         } catch (e: Exception) {
-            Log.e("RecognitionFragment", "Error releasing TensorFlow", e)
+            Log.e("RecognitionFragment", "Error during cleanup", e)
         }
-
-        // 3. Limpiar imágenes
-       // clearImageResources()
-
-        // 4. Liberar observers
-        //clearObservers()
-
-        // 5. Limpiar archivos temporales
-        //clearTempFiles()
-
-        // 6. Liberar binding (siempre al final)
-        _binding = null
-
-        super.onDestroyView()
     }
+
 
     private fun clearImageResources() {
         binding.imgPhotoPreview.setImageDrawable(null)
@@ -684,6 +828,8 @@ class RecognitionFragment : Fragment() {
             Log.e("RecognitionFragment", "Error clearing temp files", e)
         }
     }
+
+
 
     // Define el código de solicitud para la selección de imagen
     companion object {

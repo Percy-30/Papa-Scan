@@ -13,10 +13,6 @@ class FragmentAlertDialog : DialogFragment (){
     private var _binding: FragmentAlertDialogBinding? = null
     private val binding get() = _binding!!
 
-    var title: String? = null
-
-    var description: String? = null
-
     var onActionClicked: (() -> Unit)? = null
 
     override fun onCreateView(
@@ -45,6 +41,7 @@ class FragmentAlertDialog : DialogFragment (){
             dismiss() // Cierra el diálogo automáticamente
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

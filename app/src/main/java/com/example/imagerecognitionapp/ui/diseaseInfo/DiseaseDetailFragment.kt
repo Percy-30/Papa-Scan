@@ -146,7 +146,7 @@ class DiseaseDetailFragment : Fragment() {
 
             val history = History(
                 diseaseName = diseaseName,
-                section = "main",
+                section = "PapaScan",
                 description = diseaseInfo.description,
                 prevention = diseaseInfo.prevention,
                 causes = diseaseInfo.causes,
@@ -231,13 +231,61 @@ class DiseaseDetailFragment : Fragment() {
 
 
     override fun onDestroyView() {
+        cleanupResources()
         super.onDestroyView()
-        _binding = null
 
         // sharedViewModel.compressedImage?.removeObservers(viewLifecycleOwner)
         //weakBitmap?.get()?.recycle()  // Libera la memoria del bitmap si es necesario
         //weakBitmap = null
     }
+    private fun cleanupResources() {
+        try {
+            // 1. Limpiar recursos de ViewModel compartido
+            sharedViewModel.clearSelectedHistory()
+            //sharedViewModel.setImageProcessed(false) // Resetear estado de imagen procesada
+
+            // 2. Remover observadores
+            clearObservers()
+
+            // 3. Limpiar referencias de bitmap
+            clearBitmapResources()
+
+            // 4. Limpiar referencias de UI
+            binding.textSectionContent.text = null
+
+            // 5. Liberar binding (siempre al final)
+            _binding = null
+
+            Log.d("DiseaseDetailFragment", "All resources cleaned up successfully")
+        } catch (e: Exception) {
+            Log.e("DiseaseDetailFragment", "Error during cleanup", e)
+        }
+    }
+
+    private fun clearObservers() {
+        try {
+            // Remover todos los observadores del ViewModel compartido
+            sharedViewModel.isImageProcessed.removeObservers(viewLifecycleOwner)
+            sharedViewModel.compressedImage?.removeObservers(viewLifecycleOwner)
+            sharedViewModel.selectedHistoryItem.removeObservers(viewLifecycleOwner)
+        } catch (e: Exception) {
+            Log.e("DiseaseDetailFragment", "Error clearing observers", e)
+        }
+    }
+
+    private fun clearBitmapResources() {
+        try {
+            // Liberar bitmap si existe
+            weakBitmap?.get()?.recycle()
+            weakBitmap = null
+
+            // Limpiar cualquier caché de imágenes
+            System.gc() // Sugerir garbage collection para bitmaps grandes
+        } catch (e: Exception) {
+            Log.e("DiseaseDetailFragment", "Error clearing bitmap resources", e)
+        }
+    }
+
 
     companion object {
         fun newInstance(diseaseName: String, section: String, position: Int): DiseaseDetailFragment {

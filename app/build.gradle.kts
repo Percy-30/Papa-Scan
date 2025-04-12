@@ -2,8 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt.android) // Plugin para Hilt
+    //alias(libs.plugins.androidx.navigation.safeargs.kotlin)
     id("androidx.navigation.safeargs.kotlin") // Plugin para Safe Args de Navegación
-    kotlin("kapt") // Necesario para habilitar kapt en el proyecto
+    //kotlin("kapt") // Necesario para habilitar kapt en el proyecto
+    id("kotlin-kapt")
 }
 
 android {

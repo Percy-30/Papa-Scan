@@ -1,26 +1,35 @@
 package com.example.imagerecognitionapp.data.historyItem
 
+import android.animation.Animator
 import android.graphics.BitmapFactory
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ListAdapter
 import android.widget.TextView
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.example.imagerecognitionapp.R
 import com.example.imagerecognitionapp.databinding.ItemHistoryCardBinding
 import com.example.imagerecognitionapp.ui.history.HistoryItemDiffCallback
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import io.github.muddz.styleabletoast.StyleableToast
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class HistoryAdapter(
     private val onDeleteClick: (HistoryItem) -> Unit,
-    private val onItemClick: (HistoryItem) -> Unit
+    private val onItemClick: (HistoryItem) -> Unit,
+   // private val showDeleteDialog: (HistoryItem, LottieAnimationView) -> Unit // Nueva función para mostrar el diálogo
 ) : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
 
     //private var items = mutableListOf<HistoryItem>()
@@ -112,6 +121,9 @@ class HistoryAdapter(
 
                 textViewName.text = item.diseaseName
                 textViewSection.text = item.section
+                // Cambia "main" (o cualquier valor) por "papa scan" SOLO EN LA VISTA
+                //textViewSection.text = if (item.section == "main") "PapaScan" else item.section
+
 
                 val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
                 val formattedDate = dateFormat.format(Date(item.timestamp))
@@ -127,13 +139,50 @@ class HistoryAdapter(
 
                 // Configurar el botón de eliminar
 
+                // Configurar el botón de eliminar con Lottie
+                /*-buttonDelete.setOnClickListener {
+                    showDeleteDialog(item, binding.btnDeletehistorylottieAnimationView) // Asume que tienes un LottieAnimationView en tu layout
+                }*/
+
                 buttonDelete.setOnClickListener {
-                    onDeleteClick(item)
+                    showClearHistoryDialog(item, binding.btnDeletehistorylottieAnimationView, onDeleteClick)
+                    //onDeleteClick(item)
                 }
+
             }
         }
     }
 }
+
+private fun showClearHistoryDialog(item: HistoryItem, lottieAnimation: LottieAnimationView, onDeleteClick: (HistoryItem) -> Unit ) {
+    lottieAnimation.speed = 1.5f
+    lottieAnimation.playAnimation()
+
+    lottieAnimation.addAnimatorListener(object : Animator.AnimatorListener {
+        override fun onAnimationStart(animation: Animator) {}
+        override fun onAnimationCancel(animation: Animator) {}
+        override fun onAnimationRepeat(animation: Animator) {}
+
+        override fun onAnimationEnd(animation: Animator) {
+            onDeleteClick(item)
+
+            StyleableToast.makeText( lottieAnimation.context, "Registro eliminado", R.style.exampleToastCorrect).show()
+
+            lottieAnimation.frame = 0
+            lottieAnimation.removeAllAnimatorListeners()
+        }
+    })
+}
+
+
+
+
+
+
+
+
+
+
 
 /*class HistoryAdapter(private val historyList: List<HistoryItem>) :
     RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {

@@ -50,7 +50,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:lottie_autoPlay="false"
-                app:lottie_fileName="delete_all.json"
+                app:lottie_fileName="delete_all_history.json"
                 app:lottie_imageAssetsFolder="assets"
                 app:lottie_loop="false" />
 

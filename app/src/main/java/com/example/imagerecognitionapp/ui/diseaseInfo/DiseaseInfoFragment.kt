@@ -27,6 +27,7 @@ import com.example.imagerecognitionapp.data.diseaseName.diseaseDatabase
 import com.example.imagerecognitionapp.databinding.FragmentDiseaseInfoBinding
 import com.example.imagerecognitionapp.databinding.FragmentRecognitionBinding
 import com.example.imagerecognitionapp.ui.common.MenuToolbar
+import com.example.imagerecognitionapp.ui.dialog.FragmentAlertDialogExit
 import com.example.imagerecognitionapp.ui.history.HistoryViewModel
 import com.example.imagerecognitionapp.ui.recognition.RecognitionViewModel
 import com.example.imagerecognitionapp.ui.result.SharedViewModel
@@ -177,7 +178,8 @@ class DiseaseInfoFragment : Fragment() {
             context = requireContext(),
             onHistoryClick = { navigateToHistoryFragment() },
             onAboutClick = { navigateToAlertDialog() },
-            onExitClick = { requireActivity().finish() }
+            onExitClick = { showExitConfirmationDialog() }
+            //onExitClick = { requireActivity().finish() }
         )
 
         // Configurar la Toolbar
@@ -190,6 +192,23 @@ class DiseaseInfoFragment : Fragment() {
         }
         setHasOptionsMenu(true)
     }
+
+    private fun showExitConfirmationDialog() {
+        FragmentAlertDialogExit.newInstance(
+            title = getString(R.string.exit_app_title),
+            message = getString(R.string.exit_app_message),
+            positiveText = getString(R.string.exit),
+            negativeText = getString(R.string.cancel),
+            onPositive = {
+                cleanupResources()
+                requireActivity().finishAffinity()
+            },
+            onNegative = {
+                // No hacer nada o puedes agregar lógica adicional
+            }
+        ).show(parentFragmentManager, "ExitDialog")
+    }
+
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menuHandler.onCreateOptionsMenu(menu, inflater)
@@ -232,12 +251,65 @@ class DiseaseInfoFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        clearImageResources()
         super.onDestroyView()
-        _binding = null
-        // asegúrate de liberar la memoria aquí también.
-        //sharedViewModel.compressedImage?.removeObservers(viewLifecycleOwner)
-        //weakBitmap?.get()?.recycle()  // Libera la memoria del bitmap si es necesario
-        //weakBitmap = null
+    }
+
+    private fun cleanupResources() {
+        try {
+            // 1. Limpiar recursos de imágenes
+            clearImageResources()
+
+            // 2. Liberar ViewModel compartido
+            sharedViewModel.clearSelectedHistory()
+
+            // 3. Limpiar ViewPager y adaptador
+            binding.viewPager.adapter = null
+
+            // 4. Remover observadores
+            clearObservers()
+
+            // 5. Limpiar referencias de menú
+            menuHandler.let {
+                // Si MenuToolbar tiene algún recurso que limpiar
+            }
+
+            // 6. Liberar binding (siempre al final)
+            _binding = null
+
+            Log.d("DiseaseInfoFragment", "All resources cleaned up successfully")
+        } catch (e: Exception) {
+            Log.e("DiseaseInfoFragment", "Error during cleanup", e)
+        }
+    }
+
+    private fun clearImageResources() {
+        try {
+            // Limpiar Glide
+            Glide.with(this).clear(binding.imageDisease)
+
+            // Limpiar Picasso
+            Picasso.get().cancelRequest(binding.imageDisease)
+
+            // Liberar bitmap si existe
+            weakBitmap?.get()?.recycle()
+            weakBitmap = null
+
+            // Resetear ImageView
+            binding.imageDisease.setImageDrawable(null)
+        } catch (e: Exception) {
+            Log.e("DiseaseInfoFragment", "Error clearing image resources", e)
+        }
+    }
+
+    private fun clearObservers() {
+        try {
+            // Remover observadores del ViewModel compartido
+            sharedViewModel.compressedImage?.removeObservers(viewLifecycleOwner)
+            sharedViewModel.selectedHistoryItem.removeObservers(viewLifecycleOwner)
+        } catch (e: Exception) {
+            Log.e("DiseaseInfoFragment", "Error clearing observers", e)
+        }
     }
 
 }

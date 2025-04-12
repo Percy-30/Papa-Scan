@@ -49,18 +49,69 @@
             app:layout_constraintTop_toBottomOf="@+id/btnProcessImage"
             app:layout_constraintVertical_bias="0.233" />
 
-        <Button
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/btnProcessImage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="100dp"
-            app:backgroundTint="@color/colorDarkMedium"
-            android:textColor="@android:color/white"
-            app:rippleColor="@color/red"
-            android:text="@string/btnProcessImage"
+            android:background="@drawable/button_state_selector_procesar"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0">
+
+            <!-- Texto del botón -->
+            <TextView
+                android:id="@+id/btnTextProcessImages"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="4dp"
+                android:text="@string/btnProcessImage"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                app:rippleColor="@color/red"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <!-- Lottie Animation -->
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/btnProcessImageslottieAnimationView"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:visibility="visible"
+                app:lottie_autoPlay="false"
+                app:lottie_fileName="procesar_imagen.json"
+                android:layout_marginStart="8dp"
+                app:lottie_imageAssetsFolder="assets"
+                app:layout_constraintStart_toEndOf="@id/btnTextProcessImages"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:lottie_loop="false" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/progressBarlottieAnimationView"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.50"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imgPhotoPreview"
+            app:layout_constraintVertical_bias="0.181"
+            app:lottie_autoPlay="false"
+            app:lottie_imageAssetsFolder="assets"
+            app:lottie_loop="false" />
 
         <ProgressBar
             android:id="@+id/progressBar"
@@ -73,43 +124,6 @@
             app:layout_constraintTop_toBottomOf="@+id/imgPhotoPreview"
             app:layout_constraintVertical_bias="0.122" />
 
-        <TextView
-            android:id="@+id/tvLoading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/progressBar"
-            android:text="Cargando resultados..."
-            android:textSize="16sp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/progressBar" />
-
-        <TextView
-            android:id="@+id/tvDiseaseName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/tvConfidence"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvDiseaseName" />
-
-        <TextView
-            android:id="@+id/textViewResultado"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvConfidence"
-            android:textColor="#000000" />
 
         <ImageView
             android:id="@+id/imageViewResult"
@@ -117,7 +131,7 @@
             android:layout_height="200dp"
             android:scaleType="centerCrop"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvConfidence" />
+            app:layout_constraintTop_toBottomOf="@+id/btnProcessImage" />
 
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton

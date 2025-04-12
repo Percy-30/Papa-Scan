@@ -33,8 +33,10 @@ import com.example.imagerecognitionapp.databinding.FragmentCameraBinding
 import com.example.imagerecognitionapp.databinding.FragmentRecognitionBinding
 import com.example.imagerecognitionapp.ui.common.MenuToolbar
 import com.example.imagerecognitionapp.ui.dialog.FragmentAlertDialog
+import com.example.imagerecognitionapp.ui.dialog.FragmentAlertDialogExit
 import com.example.imagerecognitionapp.ui.recognition.RecognitionViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.muddz.styleabletoast.StyleableToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -98,7 +100,8 @@ class FragmentCamera : Fragment() {
             context = requireContext(),
             onHistoryClick = { handleHistoryClick() },
             onAboutClick = { navigateToAlertDialog() },
-            onExitClick = { requireActivity().finish() }
+            onExitClick = { showExitConfirmationDialog() }
+            //onExitClick = { requireActivity().finish() }
         )
 
         // Configurar la Toolbar
@@ -111,6 +114,23 @@ class FragmentCamera : Fragment() {
         }
         setHasOptionsMenu(true)
     }
+
+    private fun showExitConfirmationDialog() {
+        FragmentAlertDialogExit.newInstance(
+            title = getString(R.string.exit_app_title),
+            message = getString(R.string.exit_app_message),
+            positiveText = getString(R.string.exit),
+            negativeText = getString(R.string.cancel),
+            onPositive = {
+                cleanupResources()
+                requireActivity().finishAffinity()
+            },
+            onNegative = {
+                // No hacer nada o puedes agregar lógica adicional
+            }
+        ).show(parentFragmentManager, "ExitDialog")
+    }
+
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menuHandler.onCreateOptionsMenu(menu, inflater)
@@ -132,7 +152,8 @@ class FragmentCamera : Fragment() {
 
     private fun handleHistoryClick() {
         // Implementa aquí la lógica para el historial
-        Toast.makeText(requireContext(), "Historial seleccionado", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(requireContext(), "Historial seleccionado", Toast.LENGTH_SHORT).show()
+        showToastError("No se puede navegar al Historial")
         // findNavController().navigate(R.id.action_fragmentCamera_to_historyFragment)
     }
 
@@ -158,6 +179,7 @@ class FragmentCamera : Fragment() {
         if (isCleaningUp) return // Evitar múltiples llamadas
         isCleaningUp = true
         CloseMenuFlotant()
+        showToastError("No se guardo la foto")
         lifecycleScope.launch {
             try {
                 // 1. Liberar recursos de la cámara primero
@@ -229,6 +251,9 @@ class FragmentCamera : Fragment() {
                 showError(error)
             }
         )
+    }
+    private fun showToastError(message: String){
+        StyleableToast.makeText(requireContext(), message, R.style.exampleToastError).show()
     }
 
     private fun saveImage() {
