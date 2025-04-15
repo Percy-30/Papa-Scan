@@ -158,7 +158,9 @@ class RecognitionMain : Fragment() {
             },
             onNegative = {
                 showToastWarning("El acceso a la cámara es necesario para usar esta función")
-            }
+            },
+            iconResId = R.drawable.ic_advertencia // Ícono desde recursos
+
         ).show(parentFragmentManager, "CameraPermissionDialog")
     }
 
@@ -176,7 +178,12 @@ class RecognitionMain : Fragment() {
             },
             onNegative = {
                 showToastError("El acceso a la cámara es necesario para usar esta función")
-            }
+            },
+            iconResId = R.drawable.ic_bar_info, // Ícono desde recursos
+            positiveButtonBackgroundColor = R.color.colorTeal,
+            positiveButtonTextColor = R.color.black,
+            negativeButtonBackgroundColor = R.color.colorOrangeSoft,
+            negativeButtonTextColor = R.color.black
         ).show(parentFragmentManager, "GoToSettingsDialog")
     }
 

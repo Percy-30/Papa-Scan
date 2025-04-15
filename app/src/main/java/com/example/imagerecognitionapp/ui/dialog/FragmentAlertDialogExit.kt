@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.example.imagerecognitionapp.R
 import com.example.imagerecognitionapp.databinding.FragmentAlertDialogExitBinding
@@ -22,6 +23,15 @@ class FragmentAlertDialogExit : DialogFragment() {
     var onPositiveClick: (() -> Unit)? = null
     var onNegativeClick: (() -> Unit)? = null
 
+    // Propiedades OPCIONALES para colores
+    var positiveButtonBackgroundColor: Int? = null
+    var negativeButtonBackgroundColor: Int? = null
+    var positiveButtonTextColor: Int? = null
+    var negativeButtonTextColor: Int? = null
+
+    // Nuevo: propiedad para el ícono
+    var iconResId: Int? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -35,9 +45,22 @@ class FragmentAlertDialogExit : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         setupViews()
     }
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    }
 
     private fun setupViews() {
         with(binding) {
+            // Configurar ícono (si se proporciona)
+            iconResId?.let { resId ->
+                iconHeader.setImageResource(resId)
+                iconHeader.visibility = View.VISIBLE
+            }
+
             infoTitle.text = title
             infoDescription.text = message
 
@@ -45,6 +68,16 @@ class FragmentAlertDialogExit : DialogFragment() {
             btnPositive.apply {
                 text = positiveButtonText
                 visibility = View.VISIBLE
+
+                // Color de fondo (si se especificó)
+                positiveButtonBackgroundColor?.let { colorRes ->
+                    setBackgroundColor(ContextCompat.getColor(requireContext(), colorRes))
+                }
+                // Color de texto (si se especificó)
+                positiveButtonTextColor?.let { colorRes ->
+                    setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+                }
+
                 setOnClickListener {
                     onPositiveClick?.invoke()
                     dismiss()
@@ -55,6 +88,16 @@ class FragmentAlertDialogExit : DialogFragment() {
             btnNegative.apply {
                 text = negativeButtonText
                 visibility = View.VISIBLE
+
+                // Color de fondo (si se especificó)
+                negativeButtonBackgroundColor?.let { colorRes ->
+                    setBackgroundColor(ContextCompat.getColor(requireContext(), colorRes))
+                }
+                // Color de texto (si se especificó)
+                negativeButtonTextColor?.let { colorRes ->
+                    setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+                }
+
                 setOnClickListener {
                     onNegativeClick?.invoke()
                     dismiss()
@@ -77,7 +120,13 @@ class FragmentAlertDialogExit : DialogFragment() {
             positiveText: String,
             negativeText: String,
             onPositive: () -> Unit,
-            onNegative: () -> Unit
+            onNegative: () -> Unit,
+            // Parámetros opcionales (pueden ser nulos)
+            positiveButtonBackgroundColor: Int? = null,
+            negativeButtonBackgroundColor: Int? = null,
+            positiveButtonTextColor: Int? = null,
+            negativeButtonTextColor: Int? = null,
+            iconResId: Int? = null // Nuevo: ícono opcional
         ): FragmentAlertDialogExit {
             return FragmentAlertDialogExit().apply {
                 this.title = title
@@ -86,6 +135,12 @@ class FragmentAlertDialogExit : DialogFragment() {
                 this.negativeButtonText = negativeText
                 this.onPositiveClick = onPositive
                 this.onNegativeClick = onNegative
+                // Asignar colores solo si se proporcionan
+                this.positiveButtonBackgroundColor = positiveButtonBackgroundColor
+                this.negativeButtonBackgroundColor = negativeButtonBackgroundColor
+                this.positiveButtonTextColor = positiveButtonTextColor
+                this.negativeButtonTextColor = negativeButtonTextColor
+                this.iconResId = iconResId // Asignar ícono
             }
         }
     }

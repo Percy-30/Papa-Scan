@@ -5,12 +5,22 @@
     android:orientation="vertical"
     android:padding="24dp">
 
+    <!-- Ícono centrado (opcional) -->
+    <ImageView
+        android:id="@+id/iconHeader"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+         android:layout_marginBottom="8dp"/> <!-- Espacio entre ícono y título -->
+
     <TextView
         android:id="@+id/infoTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="20sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:textAlignment="center"/>
 
     <TextView
         android:id="@+id/infoDescription"

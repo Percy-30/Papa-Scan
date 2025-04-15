@@ -87,10 +87,12 @@ class HistoryFragment : Fragment() {
     }
 
     private fun showClearHistoryDialog(lottieAnimation: LottieAnimationView) {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Vaciar historial")
-            .setMessage("¿Estás seguro de que quieres eliminar todo el historial?")
-            .setPositiveButton("Eliminar todo") { _, _ ->
+        FragmentAlertDialogExit.newInstance(
+            title = "Vaciar historial",
+            message = "¿Estás seguro de que quieres eliminar todo el historial?",
+            positiveText = "Eliminar todo",
+            negativeText = "Cancelar",
+            onPositive = {
                 // Animación al confirmar
                 lottieAnimation.speed = 1.5f
                 lottieAnimation.playAnimation()
@@ -123,9 +125,11 @@ class HistoryFragment : Fragment() {
                         }
                     }
                 })
+            },
+            onNegative = {
+                // No se necesita acción específica al cancelar
             }
-            .setNegativeButton("Cancelar", null)
-            .show()
+        ).show(parentFragmentManager, "ClearHistoryDialog")
     }
 
     // Método para obtener los detalles de la enfermedad
