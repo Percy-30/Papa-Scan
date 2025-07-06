@@ -1,5 +1,7 @@
 package com.example.imagerecognitionapp.ui.dialog
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -26,6 +28,16 @@ class FragmentAlertDialog : DialogFragment (){
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val version = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName
+        binding.infoVersion.text = "Version $version"
+
+        binding.tvPrivacyPolicy.setOnClickListener {
+            val url = "https://sites.google.com/view/privacypolicy-papascan/inicio" // Coloca aquí el enlace real
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        }
+
+
         initViews()
     }
 

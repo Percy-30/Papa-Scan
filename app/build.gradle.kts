@@ -82,6 +82,8 @@ dependencies {
     // Componentes de UI avanzados
     implementation(libs.lottie)
     implementation(libs.styleabletoast)
+    implementation(libs.circularprogressbar)
+    //implementation("com.mikhaellopez:circularprogressbar:3.1.0") // <-- Aquí lo agregamos
 
     // Navegación
     implementation(libs.androidx.recyclerview)

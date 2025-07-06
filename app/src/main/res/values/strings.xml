@@ -6,13 +6,15 @@
     <string name="app">Papa Scan</string>
     <string name="infoTitle">Informacion</string>
     <string name="infoDescription">Deteccion de la enfermedad de la papa</string>
-    <string name="infoDescriptioneEmail">Email: achataipepercy@gmail.com</string>
-    <string name="infoImgDescription">Imagne de informacion</string>
+    <string name="version_label">Versión %1$s</string>
+    <string name="infoDescriptioneEmail">Desarrollado por ATP Dev\n atp.dev000@gmail.com</string>
+    <string name="infoImgDescription">Icono de informacion</string>
+    <string name="privacy_policy">Ver política de privacidad</string>
     <string name="btnHecho">Hecho</string>
 
     <string name="btnDetectPatofoli">Detectar enfermedad</string>
     <string name="btnHistory">Historial</string>
-    <string name="btnAbout">Acerca de</string>
+    <string name="btnAbout">Acerca de Papa Scan</string>
     <string name="btnExit">Salir</string>
     <string name="itemName">Item</string>
 

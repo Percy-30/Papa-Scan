@@ -4,11 +4,14 @@
     <item android:title="@string/itemName" android:icon="@drawable/ic_bar_menu" app:showAsAction="ifRoom">
         <menu>
             <item android:id="@+id/menu_history" android:title="@string/btnHistory"
-                android:icon="@drawable/ic_start_app"/>
+                android:icon="@drawable/ic_start_app"
+                app:showAsAction="ifRoom"/>
             <item android:id="@+id/menu_about" android:title="@string/btnAbout"
-                android:icon="@drawable/ic_bar_info"/>
+                android:icon="@drawable/ic_bar_info"
+                app:showAsAction="ifRoom"/>
             <item android:id="@+id/menu_exit" android:title="@string/btnExit"
-                android:icon="@drawable/ic_bar_exit"/>
+                android:icon="@drawable/ic_bar_exit"
+                app:showAsAction="ifRoom"/>
         </menu>
     </item>
 </menu>

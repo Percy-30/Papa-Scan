@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -101,8 +102,25 @@ class ResultFragment : Fragment() {
         recognitionResult?.let { result ->
             // Ejemplo: Mostrar los datos en la UI
             binding.tvDiseaseName.text = result.diseaseName
-            binding.tvConfidence.text = result.getProbabilityString()  // Assuming you have a method to format probability as string
+            //binding.tvConfidence.text = result.getProbabilityString()  // Assuming you have a method to format probability as string
+            //val resultconfidence = result.getProbabilityString().toFloat()
+            // Quitar el símbolo "%" antes de convertir
+            val resultconfidence = result.getProbabilityString().replace("%", "").toFloat()
 
+            binding.progresoCircular.apply {
+                //progress = resultconfidence
+                progress = if (result.diseaseName == "No detectado") 100f else resultconfidence
+                setProgressWithAnimation(resultconfidence, 1500)
+                
+                // Cambia el color según nivel de acierto
+                progressBarColor = when {
+                    result.diseaseName == "No detectado" -> Color.parseColor("#F44336") // Azul  #03A9F4
+                    resultconfidence >= 80 -> Color.parseColor("#4CAF50") // Verde
+                    resultconfidence >= 50 -> Color.parseColor("#FFC107") // Amarillo
+                    else -> Color.parseColor("#F44336") // Rojo
+                }
+            }
+            binding.tvConfidence.text = "${resultconfidence.toInt()}%"
             // Mostrar el Bitmap en el ImageView
             //binding.imageViewResult.setImageBitmap(bitmap)
 
