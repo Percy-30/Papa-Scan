@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/splashFragment"
-        android:name="com.example.app.ui.splash.SplashFragment"
+        android:name="com.atpdev.app.ui.splash.SplashFragment"
         android:label="SplashFragment" >
         <action
             android:id="@+id/action_splashFragment_to_recognitionMain"
@@ -16,7 +16,7 @@
 
     <fragment
         android:id="@+id/recognitionMain"
-        android:name="com.example.imagerecognitionapp.ui.main.RecognitionMain"
+        android:name="com.atpdev.papascan.ui.main.RecognitionMain"
         android:label="RecognitionMain"
         tools:layout="@layout/fragment_recognition">
         <action
@@ -31,7 +31,7 @@
     </fragment>
     <fragment
         android:id="@+id/recognitionFragment"
-        android:name="com.example.imagerecognitionapp.ui.recognition.RecognitionFragment"
+        android:name="com.atpdev.papascan.ui.recognition.RecognitionFragment"
         android:label="RecognitionFragment"
        >
         <action
@@ -52,7 +52,7 @@
     </fragment>
     <fragment
         android:id="@+id/fragmentCamera"
-        android:name="com.example.imagerecognitionapp.ui.camera.FragmentCamera"
+        android:name="com.atpdev.papascan.ui.camera.FragmentCamera"
         android:label="FragmentCamera" >
         <action
             android:id="@+id/action_fragmentCamera_to_recognitionFragment"
@@ -63,7 +63,7 @@
     </fragment>
     <dialog
         android:id="@+id/fragmentAlertDialog"
-        android:name="com.example.imagerecognitionapp.ui.dialog.FragmentAlertDialog"
+        android:name="com.atpdev.papascan.ui.dialog.FragmentAlertDialog"
         android:label="fragment_alert_dialog"
         tools:layout="@layout/fragment_alert_dialog" >
         <action
@@ -87,7 +87,7 @@
     </dialog>
     <fragment
         android:id="@+id/resultFragment"
-        android:name="com.example.imagerecognitionapp.ui.result.ResultFragment"
+        android:name="com.atpdev.papascan.ui.result.ResultFragment"
         android:label="fragment_result"
         tools:layout="@layout/fragment_result" >
         <action
@@ -105,7 +105,7 @@
     </fragment>
     <fragment
         android:id="@+id/diseaseInfoFragment"
-        android:name="com.example.imagerecognitionapp.ui.diseaseInfo.DiseaseInfoFragment"
+        android:name="com.atpdev.papascan.ui.diseaseInfo.DiseaseInfoFragment"
         android:label="DiseaseInfoFragment" >
         <action
             android:id="@+id/action_diseaseInfoFragment_to_fragmentAlertDialog"

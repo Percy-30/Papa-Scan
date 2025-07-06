@@ -6,7 +6,7 @@
     <data>
         <variable
             name="modelo"
-            type="com.example.imagerecognitionapp.ui.recognition.RecognitionFragment" />
+            type="com.atpdev.papascan.ui.recognition.RecognitionFragment" />
 
     </data>
 

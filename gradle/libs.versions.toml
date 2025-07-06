@@ -1,6 +1,6 @@
 [versions]
 # Android y Kotlin (Versiones principales)
-agp = "8.9.1" # Android Gradle Plugin
+agp = "8.7.0" #"8.9.1" # Android Gradle Plugin
 kotlin = "2.0.0" # Kotlin version
 ksp = "2.0.0-1.0.21" # Kotlin Symbol Processing
 
@@ -60,6 +60,8 @@ youtubedl = "0.13.5"
 styleabletoast = "2.4.0"
 facebook = "17.0.2"
 jsoup = "1.18.1"
+navigationFragmentKtxVersion = "2.9.1"
+navigationUiKtxVersion = "2.9.1"
 
 [libraries]
 # AndroidX Core
@@ -155,7 +157,6 @@ facebook-android-sdk = { group = "com.facebook.android", name = "facebook-androi
 
 # HTML Parsing
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
-
 [plugins]
 # Android
 android-application = { id = "com.android.application", version.ref = "agp" }

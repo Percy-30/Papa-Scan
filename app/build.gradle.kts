@@ -9,24 +9,17 @@ plugins {
 }
 
 android {
-    namespace = "com.example.imagerecognitionapp"
+    namespace = "com.atpdev.papascan"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.imagerecognitionapp"
+        applicationId = "com.atpdev.papascan"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        // Habilitar soporte para TensorFlow Lite si es necesario
-        ndk {
-            //abiFilters.add("armeabi-v7a")
-            //abiFilters.add("arm64-v8a")
-        }
-
     }
 
     buildTypes {
@@ -39,11 +32,17 @@ android {
         }
     }
 
+    sourceSets {
+        getByName("main") {
+            jniLibs.srcDirs("src/main/jniLibs")
+        }
+    }
+
     splits {
         abi {
             isEnable = true
             reset()
-            include("armeabi-v7a")//, "arm64-v8a"
+            include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")//, "arm64-v8a"
             isUniversalApk = false // No generará un APK universal
         }
     }
@@ -52,7 +51,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -60,7 +58,7 @@ android {
     buildFeatures {
         viewBinding = true
         dataBinding = true
-        mlModelBinding = true // Habilitar ML Model Binding
+        //mlModelBinding = true // Habilitar ML Model Binding
     }
 }
 

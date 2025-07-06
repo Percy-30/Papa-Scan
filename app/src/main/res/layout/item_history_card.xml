@@ -5,7 +5,7 @@
     <data>
         <variable
             name="item"
-            type="com.example.imagerecognitionapp.data.historyItem.HistoryItem" />
+            type="com.atpdev.papascan.data.historyItem.HistoryItem" />
     </data>
 
     <androidx.cardview.widget.CardView
