@@ -1,66 +1,172 @@
 [versions]
-agp = "8.3.2" #8.3.2||||
-kotlin = "1.9.24" #1.8.10
-coreKtx = "1.15.0"
-junit = "4.13.2"
-junitExt = "1.2.1"
-espressoCore = "3.6.1"
-appcompat = "1.7.0"
+# Android y Kotlin (Versiones principales)
+agp = "8.9.1" # Android Gradle Plugin
+kotlin = "2.0.0" # Kotlin version
+ksp = "2.0.0-1.0.21" # Kotlin Symbol Processing
+
+# Ads y Facturación
+playServicesAds = "22.5.0"
+billing = "8.0.0"
+
+# AndroidX Core
+coreKtx = "1.16.0"
+appcompat = "1.7.1"
 material = "1.12.0"
-activity = "1.9.3"
-constraintlayout = "2.2.0"
-lifecycle = "2.7.0"
-navigationSafeArgsGradlePlugin = "2.7.7"
-room = "2.6.1" #2.6.0
-hilt = "2.51.1" #2.51.1
-coroutines = "1.7.3"
-navigation = "2.7.7"  # Actualizado a 2.7.1
-glide = "4.15.0"
-recyclerView = "1.2.1"
+activity = "1.10.1"
+constraintlayout = "2.2.1"
+
+# Testing
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+
+# Lifecycle y Architecture Components
+lifecycle = "2.8.2"
+room = "2.6.1"
+navigation = "2.7.7"
+work = "2.9.0"
+navigationFragmentKtx = "2.7.7"
+navigationUiKtx = "2.7.7"
+
+# Dependency Injection
+hilt = "2.51.1"
+
+# Async y Coroutines
+coroutines = "1.8.1"
+
+# UI y Image Loading
+recyclerView = "1.3.2"
+glide = "4.16.0"
+lottie = "6.5.2"
+picasso = "2.8"
+
+# Networking
+retrofit = "2.11.0"
+okhttp = "4.12.0"
+
+# Camera
+camerax = "1.4.0"
+
+# TensorFlow
+tensorflow = "2.16.1"
+tensorflowSupport = "0.4.4"
+
+# Multimedia
+ffmpegKit = "6.0.2"
+youtubedl = "0.13.5"
+
+# Otros
+styleabletoast = "2.4.0"
+facebook = "17.0.2"
+jsoup = "1.18.1"
 
 [libraries]
-# Dependencias de Core y UI de Android
+# AndroidX Core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-androidx-navigation-safe-args-gradle-plugin = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "navigationSafeArgsGradlePlugin" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 
-# Dependencias para RecyclerView y Navegación
-androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerView" }
-androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
-androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
-#androidx-navigation-safeargs-kotlin = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation" }
-
-# Dependencias para pruebas unitarias y de UI
+# Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitExt" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 
-# Dependencias para ViewModel y LiveData
+# Navigation
+androidx-navigation-safe-args-gradle-plugin = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "navigation" }
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
+androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
+
+# RecyclerView
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerView" }
+
+# Lifecycle Components
 androidx-lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycle" }
 androidx-lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
 
-# Room para persistencia de datos
+# Work Manager
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
+
+# Room Database
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 
-# Hilt para inyección de dependencias
+# Hilt Dependency Injection
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version = "1.2.0" }
+androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version = "1.2.0-alpha01" }
 
-# Dependencias adicionales
+# Coroutines
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+
+# Image Loading
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
+picasso = { group = "com.squareup.picasso", name = "picasso", version.ref = "picasso" }
+
+# Animations
+lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottie" }
+
+# Networking
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+
+# Ads y Facturación
+play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
+play-billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
+
+# Camera
+androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camerax" }
+androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+library-camerax = { group = "com.github.jose-jhr", name = "Library-CameraX", version = "1.0.8" }
+
+# TensorFlow Lite
+tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version.ref = "tensorflow" }
+tensorflow-lite-support = { group = "org.tensorflow", name = "tensorflow-lite-support", version.ref = "tensorflowSupport" }
+tensorflow-lite-metadata = { group = "org.tensorflow", name = "tensorflow-lite-metadata", version.ref = "tensorflowSupport" }
+tensorflow-lite-task-vision = { group = "org.tensorflow", name = "tensorflow-lite-task-vision", version.ref = "tensorflowSupport" }
+
+# FFmpegKit
+ffmpeg-kit-full = { group = "com.arthenica", name = "ffmpeg-kit-full", version.ref = "ffmpegKit" }
+ffmpeg-kit-min = { group = "com.arthenica", name = "ffmpeg-kit-min", version.ref = "ffmpegKit" }
+ffmpeg-kit-video = { group = "com.arthenica", name = "ffmpeg-kit-video", version.ref = "ffmpegKit" }
+
+# UI Components
+styleabletoast = { group = "io.github.muddz", name = "styleabletoast", version.ref = "styleabletoast" }
+
+# YouTube and Video Processing
+youtube-extractor = { group = "com.github.HaarigerHarald", name = "android-youtubeExtractor", version = "v2.1.0" }
+youtubedl-library = { group = "com.github.yausername.youtubedl-android", name = "library", version.ref = "youtubedl" }
+youtubedl-ffmpeg = { group = "com.github.yausername.youtubedl-android", name = "ffmpeg", version.ref = "youtubedl" }
+
+# Social
+facebook-android-sdk = { group = "com.facebook.android", name = "facebook-android-sdk", version.ref = "facebook" }
+
+# HTML Parsing
+jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 
 [plugins]
+# Android
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-# Safe Args Plugin para la navegación
+
+# Kotlin
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+
+# KSP (Kotlin Symbol Processing)
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
+# Hilt
+hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+
+# Navigation Safe Args
 androidx-navigation-safeargs-kotlin = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation" }

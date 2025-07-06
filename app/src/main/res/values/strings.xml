@@ -5,12 +5,12 @@
     <!-- TODO: Text String Menu Principal -->
     <string name="app">Papa Scan</string>
     <string name="infoTitle">Informacion</string>
-    <string name="infoDescription">Reconocimiento Patofolia</string>
+    <string name="infoDescription">Deteccion de la enfermedad de la papa</string>
     <string name="infoDescriptioneEmail">Email: achataipepercy@gmail.com</string>
     <string name="infoImgDescription">Imagne de informacion</string>
     <string name="btnHecho">Hecho</string>
 
-    <string name="btnDetectPatofoli">Detectar patofolia</string>
+    <string name="btnDetectPatofoli">Detectar enfermedad</string>
     <string name="btnHistory">Historial</string>
     <string name="btnAbout">Acerca de</string>
     <string name="btnExit">Salir</string>
