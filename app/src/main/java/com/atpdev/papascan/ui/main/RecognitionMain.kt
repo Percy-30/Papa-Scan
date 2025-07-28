@@ -1,6 +1,7 @@
 package com.atpdev.papascan.ui.main
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -10,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.fragment.findNavController
@@ -19,8 +21,11 @@ import com.atpdev.papascan.data.repository.CameraRepository
 import com.atpdev.papascan.databinding.FragmentRecognitionMainBinding
 import com.atpdev.papascan.ui.common.MenuToolbar
 import com.atpdev.papascan.ui.dialog.FragmentAlertDialogExit
+import com.atpdev.papascan.utils.PdfOpener
 import com.atpdev.papascan.utils.TensorFlowHelper
 import io.github.muddz.styleabletoast.StyleableToast
+import java.io.File
+import java.io.FileOutputStream
 
 class RecognitionMain : Fragment() {
 
@@ -99,6 +104,7 @@ class RecognitionMain : Fragment() {
         }
         // Configurar otros botones
         infoApp()
+        manualUserApp()
         exitApp()
     }
 
@@ -210,6 +216,13 @@ class RecognitionMain : Fragment() {
             findNavController().navigate(R.id.action_recognitionMain_to_fragmentAlertDialog)
         }
     }
+
+    private fun manualUserApp() {
+        binding.btnUserManual.setOnClickListener {
+            PdfOpener.openPdfFromAssets(requireContext())
+        }
+    }
+
 
     private fun exitApp(){
         binding.btnExit.setOnClickListener{

@@ -16,49 +16,40 @@ android {
         applicationId = "com.atpdev.papascan"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 5
+        versionName = "1.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true // Para reducir el tamaño del APK en producción
+            // BuildConfig.DEBUG es automáticamente 'false' aquí
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
-    }
-
-    sourceSets {
-        getByName("main") {
-            jniLibs.srcDirs("src/main/jniLibs")
-        }
-    }
-
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")//, "arm64-v8a"
-            isUniversalApk = false // No generará un APK universal
+        debug{
+            // BuildConfig.DEBUG es automáticamente 'true' aquí
+            // Si necesitas forzarlo por alguna razón, puedes añadir:
+            // buildConfigField "boolean", "DEBUG", "true"
         }
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 
     buildFeatures {
         viewBinding = true
         dataBinding = true
-        //mlModelBinding = true // Habilitar ML Model Binding
+        mlModelBinding = true // Habilitar ML Model Binding
     }
 }
 
@@ -158,4 +149,5 @@ dependencies {
     // ====================== UTILIDADES ======================
     // Desugaring para APIs modernas
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    // Pra leer pdf
 }

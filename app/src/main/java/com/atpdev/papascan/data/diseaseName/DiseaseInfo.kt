@@ -30,8 +30,8 @@ data class DiseaseInfo(
                 "<b>&#42; Eliminación de plantas infectadas:</b> Eliminar las plantas infectadas puede ayudar a reducir la propagación de la enfermedad. <br><br>" +
                 "<b>&#42; Mejora de la ventilación:</b> Mejorar la ventilación en el campo puede ayudar a reducir la humedad y la propagación de la enfermedad."
     ),
-    "Papa_Saludable" to DiseaseInfo(
-        name = " Papa_Saludable",
+    "Hoja_Saludable" to DiseaseInfo(
+        name = " Hoja_Saludable",
         description = ": La planta de papa se encuentra en un estado saludable y sin síntomas de enfermedad.",
         prevention = "Mantener prácticas agrícolas saludables, como la rotación de cultivos y el control de plagas.",
         causes = "Causas papa Saludable,  No aplica",

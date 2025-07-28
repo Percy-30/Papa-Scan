@@ -37,5 +37,10 @@
     <string name="exit_app_message">¿Estás seguro que deseas salir de la aplicación?</string>
     <string name="exit">Salir</string>
     <string name="cancel">Cancelar</string>
+    <string name="user_manual"> Manual de usuario</string>
+    <string name="share_app">Compartir Papa Scan</string>
+    <string name="share_app_title">Papa Scan</string>
+    <string name="share_app_message">🌱 ¡Hola! Te recomiendo Papa Scan, una app que detecta enfermedades en hojas de papa usando inteligencia artificial. Pruébala desde aquí:</string>
+    <string name="choose_app_to_share">Elige una app para compartir Papa Scan</string>
 
 </resources>

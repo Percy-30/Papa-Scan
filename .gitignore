@@ -17,3 +17,5 @@ local.properties
 Reconocimiento-de-enfermedades-de-la-papa/
 app/release/
 
+# Ignorar archivos de Android Bundle
+*.aab

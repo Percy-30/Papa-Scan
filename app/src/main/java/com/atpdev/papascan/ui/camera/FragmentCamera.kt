@@ -1,5 +1,6 @@
 package com.atpdev.papascan.ui.camera
 
+import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
@@ -30,6 +31,8 @@ import com.atpdev.papascan.ui.common.MenuToolbar
 import com.atpdev.papascan.ui.dialog.FragmentAlertDialog
 import com.atpdev.papascan.ui.dialog.FragmentAlertDialogExit
 import com.atpdev.papascan.ui.recognition.RecognitionViewModel
+import com.atpdev.papascan.utils.AppConstants
+import com.atpdev.papascan.utils.sharePapaScanApp
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.muddz.styleabletoast.StyleableToast
 import kotlinx.coroutines.Dispatchers
@@ -95,6 +98,7 @@ class FragmentCamera : Fragment() {
             context = requireContext(),
             onHistoryClick = { handleHistoryClick() },
             onAboutClick = { navigateToAlertDialog() },
+            onShareClick = { sharePapaScanApp()},
             onExitClick = { showExitConfirmationDialog() }
             //onExitClick = { requireActivity().finish() }
         )
@@ -151,7 +155,6 @@ class FragmentCamera : Fragment() {
         showToastError("No se puede navegar al Historial")
         // findNavController().navigate(R.id.action_fragmentCamera_to_historyFragment)
     }
-
 
     //*********ALERT DIALOG
     private fun navigateToAlertDialog() {
