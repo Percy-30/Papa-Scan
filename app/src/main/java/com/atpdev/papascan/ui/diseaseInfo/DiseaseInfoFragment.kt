@@ -24,6 +24,7 @@ import com.atpdev.papascan.ui.dialog.FragmentAlertDialogExit
 import com.atpdev.papascan.ui.history.HistoryViewModel
 import com.atpdev.papascan.ui.recognition.RecognitionViewModel
 import com.atpdev.papascan.ui.result.SharedViewModel
+import com.atpdev.papascan.utils.sharePapaScanApp
 import com.google.android.material.tabs.TabLayoutMediator
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.launch
@@ -169,6 +170,7 @@ class DiseaseInfoFragment : Fragment() {
             context = requireContext(),
             onHistoryClick = { navigateToHistoryFragment() },
             onAboutClick = { navigateToAlertDialog() },
+            onShareClick = {sharePapaScanApp()},
             onExitClick = { showExitConfirmationDialog() }
             //onExitClick = { requireActivity().finish() }
         )

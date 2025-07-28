@@ -12,6 +12,7 @@ class MenuToolbar(
     private val context: Context,
     private val onHistoryClick: () -> Unit = {},
     private val onAboutClick: () -> Unit = {},
+    private val onShareClick: () -> Unit = {},
     private val onExitClick: () -> Unit = {}
 ) {
     fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -26,6 +27,10 @@ class MenuToolbar(
             }
             R.id.menu_about -> {
                 onAboutClick()
+                true
+            }
+            R.id.menu_share ->{
+                onShareClick()
                 true
             }
             R.id.menu_exit -> {

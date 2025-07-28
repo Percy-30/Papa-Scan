@@ -26,6 +26,7 @@ import com.atpdev.papascan.databinding.FragmentResultBinding
 import com.atpdev.papascan.ui.common.MenuToolbar
 import com.atpdev.papascan.ui.dialog.FragmentAlertDialogExit
 import com.atpdev.papascan.ui.recognition.RecognitionViewModel
+import com.atpdev.papascan.utils.sharePapaScanApp
 import com.squareup.picasso.Picasso
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.muddz.styleabletoast.StyleableToast
@@ -217,6 +218,7 @@ class ResultFragment : Fragment() {
             context = requireContext(),
             onHistoryClick = { navigateToHistoryFragment() },
             onAboutClick = { navigateToAlertDialog() },
+            onShareClick = {sharePapaScanApp()},
             onExitClick = { showExitConfirmationDialog() }
             //onExitClick = { requireActivity().finish() }
         )

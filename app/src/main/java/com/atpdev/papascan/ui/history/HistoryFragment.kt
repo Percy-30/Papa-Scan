@@ -25,6 +25,7 @@ import com.atpdev.papascan.ui.common.MenuToolbar
 import com.atpdev.papascan.ui.dialog.FragmentAlertDialogExit
 import com.atpdev.papascan.ui.history.HistoryViewModel
 import com.atpdev.papascan.ui.result.SharedViewModel
+import com.atpdev.papascan.utils.sharePapaScanApp
 import io.github.muddz.styleabletoast.StyleableToast
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
@@ -250,6 +251,7 @@ class HistoryFragment : Fragment() {
             context = requireContext(),
             onHistoryClick = { /* Ya estamos en History */ },
             onAboutClick = { navigateToAlertDialog() },
+            onShareClick = {sharePapaScanApp()},
             onExitClick = { showExitConfirmationDialog() }
         )
 

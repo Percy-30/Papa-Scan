@@ -47,6 +47,7 @@ import com.atpdev.papascan.ui.common.MenuToolbar
 import com.atpdev.papascan.ui.dialog.FragmentAlertDialogExit
 import com.atpdev.papascan.ui.result.SharedViewModel
 import com.atpdev.papascan.utils.TensorFlowHelper
+import com.atpdev.papascan.utils.sharePapaScanApp
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.muddz.styleabletoast.StyleableToast
 import kotlinx.coroutines.CoroutineScope
@@ -166,6 +167,7 @@ class RecognitionFragment : Fragment() {
             context = requireContext(),
             onHistoryClick = { navigateToHistoryFragment() },
             onAboutClick = { navigateToAlertDialog() },
+            onShareClick = {sharePapaScanApp()},
             onExitClick = { showExitConfirmationDialog() }
         )
 

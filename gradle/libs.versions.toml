@@ -1,6 +1,6 @@
 [versions]
 # Android y Kotlin (Versiones principales)
-agp = "8.7.0" #"8.9.1" # Android Gradle Plugin
+agp = "8.11.1" #"8.7.0" #"8.9.1" # Android Gradle Plugin
 kotlin = "2.0.0" # Kotlin version
 ksp = "2.0.0-1.0.21" # Kotlin Symbol Processing
 
