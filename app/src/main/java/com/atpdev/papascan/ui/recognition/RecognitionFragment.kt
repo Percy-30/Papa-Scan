@@ -41,7 +41,6 @@ import com.atpdev.papascan.R
 import com.atpdev.papascan.data.model.RecognitionResult
 import com.atpdev.papascan.data.repository.CameraRepository
 import com.atpdev.papascan.data.repository.ImageRecognitionException
-import com.atpdev.papascan.data.repository.ImageRecognitionRepository
 import com.atpdev.papascan.databinding.FragmentRecognitionBinding
 import com.atpdev.papascan.ui.common.MenuToolbar
 import com.atpdev.papascan.ui.dialog.FragmentAlertDialogExit
@@ -67,7 +66,6 @@ class RecognitionFragment : Fragment() {
     private var _binding: FragmentRecognitionBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var imageRecognitionRepository: ImageRecognitionRepository
     private lateinit var cameraRepository: CameraRepository
     private lateinit var menuHandler: MenuToolbar
     private val viewModel: RecognitionViewModel by viewModels()
@@ -352,15 +350,27 @@ class RecognitionFragment : Fragment() {
         binding.btnProcessImage.setOnClickListener {
             _binding ?: return@setOnClickListener
 
-            //showAnimationForFixedTime(5000) // 5 segundos
-            //showRandomAnimation()
             if (cargeImage) {
                 // Iniciar animación en bucle infinito
                 showRandomAnimation(loop = true) // <-- Ahora se repite
                 lifecycleScope.launch {
-                    delay(3000) // Espera 5 segundos
+                    delay(3000) // Espera 3 segundos
                     try {
-                        ProcesarImagen()
+                        //ProcesarImagen()
+                        // ⏱️ Medir inicio
+                        val startTime = System.currentTimeMillis()
+
+                        ProcesarImagen() // tu función que procesa la imagen
+
+                        // ⏱️ Medir fin
+                        val endTime = System.currentTimeMillis()
+                        val elapsedTime = endTime - startTime // en ms
+
+                        // Mostrar en Log
+                        Log.d("Performance", "Velocidad de reconocimiento: $elapsedTime ms")
+
+                        // Mostrar en Toast
+                        //Toast.makeText(requireContext(), "Reconocimiento en $elapsedTime ms", Toast.LENGTH_SHORT).show()
                     } catch (e: Exception) {
                         Log.e("Process", "Error", e)
                     }

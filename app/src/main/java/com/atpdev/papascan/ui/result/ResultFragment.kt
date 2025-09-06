@@ -123,7 +123,7 @@ class ResultFragment : Fragment() {
             //binding.imageViewResult.setImageBitmap(bitmap)
 
 
-            Log.d("Resultado", "Resultado del reconocimiento: ${result.diseaseName}, Probabilidad: ${result.probability}")
+            Log.d("Performance", "Resultado del reconocimiento: ${result.diseaseName}, Probabilidad: ${result.probability}")
         }
 
         // Usa los datos
