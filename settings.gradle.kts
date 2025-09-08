@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "imageRecognitionApp"
+rootProject.name = "Papa "
 include(":app")
  
