@@ -16,16 +16,20 @@ android {
         applicationId = "com.atpdev.papascan"
         minSdk = 24
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.5"
+        versionCode = 8
+        versionName = "1.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+
         release {
-            isMinifyEnabled = true // Para reducir el tamaño del APK en producción
+            //isMinifyEnabled = true // Para reducir el tamaño del APK en producción
+            //isShrinkResources = true
             // BuildConfig.DEBUG es automáticamente 'false' aquí
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
