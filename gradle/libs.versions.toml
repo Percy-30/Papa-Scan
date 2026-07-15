@@ -23,7 +23,7 @@ espressoCore = "3.6.1"
 # Lifecycle y Architecture Components
 lifecycle = "2.8.2"
 room = "2.6.1"
-navigation = "2.7.7"
+navigation = "2.8.3" #2.7.7
 work = "2.9.0"
 navigationFragmentKtx = "2.7.7"
 navigationUiKtx = "2.7.7"

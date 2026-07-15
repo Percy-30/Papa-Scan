@@ -20,7 +20,8 @@
         android:roundIcon="@mipmap/ic_potato_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ImageRecognitionApp"
-        tools:targetApi="31">
+        android:allowNativeHeapPointerTagging="false"
+        tools:targetApi="35">
 
         <!-- Agrega el FileProvider aquí -->
         <provider

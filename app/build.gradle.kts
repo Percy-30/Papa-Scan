@@ -16,10 +16,11 @@ android {
         applicationId = "com.atpdev.papascan"
         minSdk = 24
         targetSdk = 35
-        versionCode = 8
-        versionName = "1.7"
+        versionCode = 10
+        versionName = "1.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["android.nativeHeapPointerTagging"] = "false"
     }
 
     buildTypes {
@@ -61,7 +62,7 @@ dependencies {
     // ====================== CAPA VIEW ======================
 
     // Reproductor de video (ExoPlayer)
-    implementation("com.google.android.exoplayer:exoplayer:2.18.1")
+    //implementation("com.google.android.exoplayer:exoplayer:2.18.1")
     // Redes Sociales (Facebook SDK)
     implementation(libs.facebook.android.sdk)
 
@@ -135,8 +136,13 @@ dependencies {
     implementation(libs.tensorflow.lite.support)
     implementation(libs.tensorflow.lite.metadata)
     implementation(libs.tensorflow.lite.task.vision)
-    implementation("org.tensorflow:tensorflow-lite-gpu:2.13.0")
-    implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.13.0")
+    implementation("org.tensorflow:tensorflow-lite:2.16.1")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.16.1")
+    implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.16.1")
+
+
+    //implementation("org.tensorflow:tensorflow-lite-gpu:2.13.0")
+    //implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.13.0")
 
     // WorkManager (Tareas en segundo plano)
     implementation(libs.androidx.work.runtime.ktx)
